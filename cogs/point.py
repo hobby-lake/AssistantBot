@@ -2,8 +2,12 @@ import discord
 from discord.ext import commands
 from discord.commands import slash_command, SlashCommandGroup, Option
 from discord import ApplicationContext, Member
-from src import JSON, COLOR
+from src import JSON, COLOR, SECURE
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+DEV = int(os.getenv("DEV"))
 
 class PointManager(commands.Cog):
     def __init__(self, bot):
@@ -14,9 +18,6 @@ class PointManager(commands.Cog):
     @point.command(name="check", description="ポイント残高を確認します。")
     async def plus(self, ctx: ApplicationContext, target: Option(Member, "対象ユーザー", required = False, default=None)): # type:ignore
         await ctx.defer()
-        if ctx.guild is None:
-            await ctx.respond("このコマンドはサーバー内でのみ使用できます。", ephemeral=True)
-            return False
         guild=ctx.guild
         data_path = f".\\data\\member_data\\M{guild.id}.json"
         data = JSON.load(data_path)
@@ -30,9 +31,8 @@ class PointManager(commands.Cog):
     @point.command(name="plus", description="ポイントを付与します。")
     async def plus(self, ctx: ApplicationContext, target: Member, amount: int):
         await ctx.defer()
-        if ctx.guild is None:
-            await ctx.respond("このコマンドはサーバー内でのみ使用できます。", ephemeral=True)
-            return False
+        if await SECURE.Restrict() == False:
+            return
         guild=ctx.guild
         data_path = f".\\data\\member_data\\M{guild.id}.json"
         data = JSON.load(data_path)
@@ -44,9 +44,8 @@ class PointManager(commands.Cog):
     @point.command(name="minus", description="ポイントを減らします。")
     async def plus(self, ctx: ApplicationContext, target: Member, amount: int):
         await ctx.defer()
-        if ctx.guild is None:
-            await ctx.respond("このコマンドはサーバー内でのみ使用できます。", ephemeral=True)
-            return False
+        if await SECURE.Restrict() == False:
+            return
         guild=ctx.guild
         data_path = f".\\data\\member_data\\M{guild.id}.json"
         data = JSON.load(data_path)

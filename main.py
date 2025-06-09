@@ -8,9 +8,9 @@ from src import JSON,COLOR
 load_dotenv()
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 GUILD_IDS = [int(gid.strip()) for gid in os.getenv("DEBUG_GUILD_ID", "").split(",") if gid.strip()]
-AUTHORIZED_USER_IDS = int(os.getenv("DEV"))
+AUTHORIZED_USER_ID = int(os.getenv("DEV"))
 
-# スタートアップ
+# メインプログラム
 class MainProcess(Bot):
     def __init__(self):
         intents = discord.Intents.default()
@@ -18,6 +18,8 @@ class MainProcess(Bot):
         intents.members = True
         super().__init__(intents=intents)
         self.guild_ids = GUILD_IDS
+
+        self.add_listener(self.on_application_command_error)
 
     async def on_ready(self):
         COLOR.text(f"> Activating: {self.user}", COLOR.Log)
@@ -34,6 +36,18 @@ class MainProcess(Bot):
             except discord.HTTPException as e:
                 print(f"・ID: {guild_id} → ❌ HTTPエラー: {e}")
         COLOR.text("> Activated!", COLOR.Log)
+
+    async def on_application_command_error(self, ctx: discord.ApplicationContext, error):
+        COLOR.text(f"[ERROR] {ctx.command} にてエラー: {type(error).__name__}: {error}", COLOR.Error)
+
+        if isinstance(error, discord.errors.Forbidden):
+            await ctx.respond("❌ Botに権限がありません。", ephemeral=True)
+        elif isinstance(error, commands.MissingPermissions):
+            await ctx.respond("❌ あなたにこの操作を行う権限がありません。", ephemeral=True)
+        elif isinstance(error, commands.CommandInvokeError):
+            await ctx.respond(f"⚠️ 実行中にエラーが発生しました: `{error.original}`", ephemeral=True)
+        else:
+            await ctx.respond("❌ 未知のエラーが発生しました。", ephemeral=True)
 
 # Botの立ち上げとCogの登録
 async def main():
