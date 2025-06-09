@@ -10,8 +10,8 @@ def load(filename):
         with open(filename, 'r', encoding='utf-8') as f:
             return json.load(f)
     except FileNotFoundError:
-        COLOR(f"ファイルが見つかりません：{filename}\n新規作成します。", COLOR.WARN)
+        COLOR.text(f"ファイルが見つかりません：{filename}\n新規作成します。", COLOR.WARN)
         return {}
     except json.JSONDecodeError:
-        COLOR(f"デコードできませんでした：{filename}\n空の辞書を出力します。", COLOR.WARN)
+        COLOR.text(f"デコードできませんでした：{filename}\n空の辞書を出力します。", COLOR.WARN)
         return {}

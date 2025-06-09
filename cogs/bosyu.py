@@ -1,10 +1,9 @@
 import discord
 from discord.ext import commands
 from discord.commands import slash_command
-from discord.ui import Modal, InputText, Button, View, Select
-from discord.enums import InputTextStyle
+from discord.ui import Select
 from discord import ApplicationContext
-from src import JSON, COLOR
+from src import JSON
 
 # ゲーム選択セレクトメニュー
 class GameSelect(Select):
