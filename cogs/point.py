@@ -37,7 +37,7 @@ class PointManager(commands.Cog):
         data_path = f".\\data\\member_data\\M{guild.id}.json"
         data = JSON.load(data_path)
         data[str(target.id)]["point"] = data[str(target.id)]["point"] + amount
-        JSON.save(data)
+        JSON.save(data, data_path)
         await ctx.respond(f"{target.name}に{amount}ポイントを付与しました。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）")
         COLOR.text(f"{target.name}に{amount}ポイントを付与しました。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）",COLOR.Log)
 
@@ -51,7 +51,7 @@ class PointManager(commands.Cog):
         data = JSON.load(data_path)
         if not data[str(target.id)]["point"] < amount:
             data[str(target.id)]["point"] = data[str(target.id)]["point"] - amount
-            JSON.save(data)
+            JSON.save(data, data_path)
             await ctx.respond(f"{target.name}のポイントを{amount}ポイント減らしました。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）")
             COLOR.text(f"{target.name}のポイントを{amount}ポイント減らしました。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）", COLOR.Log)
         else:
