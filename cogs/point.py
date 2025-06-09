@@ -31,7 +31,7 @@ class PointManager(commands.Cog):
     @point.command(name="plus", description="ポイントを付与します。")
     async def plus(self, ctx: ApplicationContext, target: Member, amount: int):
         await ctx.defer()
-        if await SECURE.Restrict() == False:
+        if await SECURE.Restrict(ctx) == False:
             return
         guild=ctx.guild
         data_path = f".\\data\\member_data\\M{guild.id}.json"
@@ -44,7 +44,7 @@ class PointManager(commands.Cog):
     @point.command(name="minus", description="ポイントを減らします。")
     async def plus(self, ctx: ApplicationContext, target: Member, amount: int):
         await ctx.defer()
-        if await SECURE.Restrict() == False:
+        if await SECURE.Restrict(ctx) == False:
             return
         guild=ctx.guild
         data_path = f".\\data\\member_data\\M{guild.id}.json"

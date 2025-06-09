@@ -123,7 +123,7 @@ class ManageGroup(commands.Cog):
     @mng.command(name="get_members", description="このサーバーのメンバー情報をJSONに保存します")
     async def get_members(self, ctx: ApplicationContext):
         await ctx.defer()
-        if await SECURE.Restrict() == False:
+        if await SECURE.Restrict(ctx) == False:
             return
           
         guild = ctx.guild
