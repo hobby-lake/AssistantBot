@@ -135,7 +135,12 @@ class BosyuUI(discord.ui.View):
             f"👥 {self.人数}名の参加をお待ちしてます！\n"
             f"📝 募集詳細：{self.詳細 or 'なし'}"
         )
-        await interaction.response.send_message(msg, view=ParticipationView(self), ephemeral=False)
+        await interaction.response.send_message(
+            msg,
+            view=ParticipationView(self),
+            ephemeral=False,
+            allowed_mentions=discord.AllowedMentions(roles=True)
+        )
         self.stop()
 
 

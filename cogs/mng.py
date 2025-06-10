@@ -6,6 +6,7 @@ from src import JSON, COLOR, SECURE
 import os
 from dotenv import load_dotenv
 from datetime import date
+from cogs.ticket import TicketCreateButton
 
 today = date.today()
 load_dotenv()
@@ -117,6 +118,7 @@ class PaginatedLinkRoleVC_UI(discord.ui.View):
 class ManageGroup(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.ticket_channels = {} 
 
     mng = SlashCommandGroup("mng", "管理者用初期設定コマンド")
 
@@ -125,32 +127,30 @@ class ManageGroup(commands.Cog):
         await ctx.defer()
         if await SECURE.Restrict(ctx) == False:
             return
-          
+        
         guild = ctx.guild
+        if os.path.exists(f".\\data\\member_dara\\M{guild.id}.json"):
+            members_data = {}
+            async for member in guild.fetch_members(limit=None):
+                if not member.bot and members_data.get(member.id) != {}:
+                    members_data[member.id] = {
+                        "name": member.name,
+                        "point": 0,
+                        "last_updated": today.strftime("%Y-%m-%d")
+                    }
+                    
+            JSON.save(members_data, f".\\data\\member_data\\M{guild.id}.json")
 
-        members_data = {}
-        async for member in guild.fetch_members(limit=None):
-            if not member.bot and members_data.get(member.id) != {}:
-                members_data[member.id] = {
-                    "name": member.name,
-                    "point": 0,
-                    "last_updated": today.strftime("%Y-%m-%d")
-                }
-                 
-        JSON.save(members_data, f".\\data\\member_data\\M{guild.id}.json")
-
-        COLOR.text(f"✅ {len(members_data)}人のメンバー情報を `M{guild.id}.json` に保存しました！", COLOR.Log)
-        await ctx.respond(f"{len(members_data)}人のメンバー情報をあらたに作成しました！\n（実行者: {ctx.author.mention}）")
+            COLOR.text(f"✅ {len(members_data)}人のメンバー情報を `M{guild.id}.json` に保存しました！", COLOR.Log)
+            await ctx.respond(f"{len(members_data)}人のメンバー情報をあらたに作成しました！\n（実行者: {ctx.author.mention}）")
+        else:
+            await ctx.respond(f"❌ メンバー情報は既に存在します！")
 
     @mng.command(name="link", description="ロールとボイスチャンネルをカテゴリごとに紐づけ")
     async def link(self, ctx: ApplicationContext):
         await ctx.defer(ephemeral=True)
         guild = ctx.guild
-        if guild is None:
-            await ctx.respond("❌ このコマンドはサーバー内でのみ使用できます。", ephemeral=True)
-            return
-        if not ctx.author.guild_permissions.manage_guild and ctx.author.id != DEV:
-            await ctx.respond("❌ このコマンドを使うにはサーバー管理権限が必要です。", ephemeral=True)
+        if await SECURE.Restrict(ctx) == False:
             return
 
         # 管理者ロールを除外
@@ -178,19 +178,28 @@ class ManageGroup(commands.Cog):
     async def set_ticket_channel(
         self,
         ctx: discord.ApplicationContext,
-        channel: Option(discord.TextChannel, "チケットを作成できるチャンネル") # type:ignore
     ):
         await ctx.defer(ephemeral=True)
-        guild = ctx.guild
-        if guild is None:
-            await ctx.respond("❌ このコマンドはサーバー内でのみ使用できます。", ephemeral=True)
-            return
-        if not ctx.author.guild_permissions.manage_guild and ctx.author.id != DEV:
-            await ctx.respond("❌ このコマンドを使うにはサーバー管理権限が必要です。", ephemeral=True)
+
+        ticket_cog = self.bot.get_cog("Ticket")
+        if not ticket_cog:
+            await ctx.respond("❌ Ticketモジュールが読み込まれていません。", ephemeral=True)
             return
 
-        self.ticket_channels[ctx.guild.id] = channel.id
-        await ctx.respond(f"✅ チケットチャンネルを {channel.mention} に設定しました。", ephemeral=True)
+        category = discord.utils.get(ctx.guild.categories, name="問い合わせフォーム")
+        if category is None:
+            # カテゴリがなければ作成（権限はBotが持っている前提）
+            category = await ctx.guild.create_category("問い合わせフォーム")
+            channel = await ctx.guild.create_text_channel("チケットセンター",category=category,topic="問い合わせ用のチケットを発行するチャンネルです。")
+
+            await channel.send(
+                "🎫 管理者への問い合わせは以下のボタンからお願いします。\nチケットは管理者が「解決した」と判断した後に閉じます。\n閉じたチケットチャンネルはログとして別のカテゴリに移動させます。",
+                view=TicketCreateButton()
+            )
+        else:
+            await ctx.respond("既にチケットセンターが存在しています",ephemeral=True)
+
+        await ctx.respond("チケットセンターの設置を完了しました", ephemeral=True)
 
 def setup(bot):
     bot.add_cog(ManageGroup(bot))
