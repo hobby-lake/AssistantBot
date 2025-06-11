@@ -88,11 +88,7 @@ class TicketCloseButton(discord.ui.View):
         if not archive_category:
             archive_category = await guild.create_category("アーカイブ")
 
-        overwrites = {
-            guild.default_role: discord.PermissionOverwrite(read_messages=True, send_messages=False),
-            guild.me: discord.PermissionOverwrite(read_messages=True)
-        }
-        await channel.edit(category=archive_category, overwrites=overwrites)
+        await channel.edit(category=archive_category)
 
         await interaction.response.send_message(
             f"{channel.mention} をアーカイブしました。閲覧のみ可能です。\n実行者：{interaction.user.mention}",
