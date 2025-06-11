@@ -90,6 +90,12 @@ class TicketCloseButton(discord.ui.View):
 
         await channel.edit(category=archive_category)
 
+        # 👇 書き込み権限だけを剥奪（閲覧は変更しない）
+        overwrite = channel.overwrites_for(guild.default_role)
+        overwrite.send_messages = False  # 書き込み禁止
+        # view_channel は None のまま（変更しない）
+        await channel.set_permissions(guild.default_role, overwrite=overwrite)
+
         await interaction.response.send_message(
             f"{channel.mention} をアーカイブしました。閲覧のみ可能です。\n実行者：{interaction.user.mention}",
             ephemeral=False
