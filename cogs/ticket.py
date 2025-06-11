@@ -1,5 +1,6 @@
 import discord
 from datetime import datetime
+import re
 
 class Ticket(discord.Cog):
     def __init__(self, bot: discord.Bot):
@@ -19,12 +20,20 @@ class Ticket(discord.Cog):
 
         archive_category = await self.get_or_create_category(ctx.guild, "アーカイブ")
 
-        overwrites = {
-            ctx.guild.default_role: discord.PermissionOverwrite(read_messages=True, send_messages=False),
-            ctx.guild.me: discord.PermissionOverwrite(read_messages=True)
-        }
-        await channel.edit(category=archive_category, overwrites=overwrites)
-        await ctx.respond(f"{channel.mention} をアーカイブしました。閲覧のみ可能です。")
+        # 作成者のIDをチャンネルトピックから取得
+        match = re.search(r"user_id:(\d+)", channel.topic or "")
+        ticket_owner = ctx.guild.get_member(int(match.group(1))) if match else None
+
+        await channel.edit(category=archive_category)
+
+        # 明示的に everyone の閲覧・書き込みを禁止
+        await channel.set_permissions(ctx.guild.default_role, read_messages=False, send_messages=False)
+
+        # 作成者には閲覧のみ許可（必要なら）
+        if ticket_owner:
+            await channel.set_permissions(ticket_owner, read_messages=True, send_messages=False)
+
+        await ctx.respond(f"{channel.mention} をアーカイブしました（閲覧のみ可能）。")
 
     @staticmethod
     def is_ticket_channel(name: str) -> bool:
@@ -55,7 +64,7 @@ class TicketCreateButton(discord.ui.View):
             f"ticket-{user.name}-{now_str}",
             category=category,
             overwrites=overwrites,
-            topic=f"{user} さんのチケット（Botによって作成）"
+            topic=f"{user} さんのチケット（Botによって作成） user_id:{user.id}"
         )
 
         await ticket_channel.send(
@@ -88,16 +97,21 @@ class TicketCloseButton(discord.ui.View):
         if not archive_category:
             archive_category = await guild.create_category("アーカイブ")
 
+        # 作成者をチャンネルトピックから取得
+        match = re.search(r"user_id:(\d+)", channel.topic or "")
+        ticket_owner = guild.get_member(int(match.group(1))) if match else None
+
         await channel.edit(category=archive_category)
 
-        # 👇 書き込み権限だけを剥奪（閲覧は変更しない）
-        overwrite = channel.overwrites_for(guild.default_role)
-        overwrite.send_messages = False  # 書き込み禁止
-        # view_channel は None のまま（変更しない）
-        await channel.set_permissions(guild.default_role, overwrite=overwrite)
+        # 全員から閲覧・書き込みを剥奪
+        await channel.set_permissions(guild.default_role, read_messages=False, send_messages=False)
+
+        # 作成者にのみ閲覧許可（必要なら）
+        if ticket_owner:
+            await channel.set_permissions(ticket_owner, read_messages=True, send_messages=False)
 
         await interaction.response.send_message(
-            f"{channel.mention} をアーカイブしました。閲覧のみ可能です。\n実行者：{interaction.user.mention}",
+            f"{channel.mention} をアーカイブしました（閲覧のみ可能）。\n実行者：{interaction.user.mention}",
             ephemeral=False
         )
 
