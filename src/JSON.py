@@ -1,3 +1,4 @@
+# jsonファイル操作用関数
 import json
 from src import COLOR
 

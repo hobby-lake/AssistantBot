@@ -31,3 +31,6 @@ Discordのテキストチャンネル上で指定のコマンドを入力する�
     - targetにたいしてamount分のポイントを付与する。
   - minus target(任意のメンバー。入力必須) amount(ポイントの数)
     - taegetのポイントをamount分減らす。ただし、amountがtargetのポイントを上回る場合はこれをしない。
+
+# OTHER INFORMATIONS
+[OAuth2 リンク](https://discord.com/oauth2/authorize?client_id=1380828889156423761&permissions=8&integration_type=0&scope=bot+applications.commands)

@@ -1,6 +1,5 @@
-import discord
 from discord.ext import commands
-from discord.commands import slash_command, SlashCommandGroup, Option
+from discord.commands import SlashCommandGroup, Option
 from discord import ApplicationContext, Member
 from src import JSON, COLOR, SECURE
 import os
@@ -21,6 +20,7 @@ class PointManager(commands.Cog):
         guild=ctx.guild
         data_path = f".\\data\\member_data\\M{guild.id}.json"
         data = JSON.load(data_path)
+
         if target == None:
             result = data[str(str(ctx.author.id))]["point"]
             await ctx.respond(f"ポイント残高は{result}です。\n（実行者: {ctx.author.mention}）")
@@ -36,6 +36,7 @@ class PointManager(commands.Cog):
         guild=ctx.guild
         data_path = f".\\data\\member_data\\M{guild.id}.json"
         data = JSON.load(data_path)
+
         data[str(target.id)]["point"] = data[str(target.id)]["point"] + amount
         JSON.save(data, data_path)
         await ctx.respond(f"{target.name}に{amount}ポイントを付与しました。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）")
@@ -49,6 +50,7 @@ class PointManager(commands.Cog):
         guild=ctx.guild
         data_path = f".\\data\\member_data\\M{guild.id}.json"
         data = JSON.load(data_path)
+        
         if not data[str(target.id)]["point"] < amount:
             data[str(target.id)]["point"] = data[str(target.id)]["point"] - amount
             JSON.save(data, data_path)

@@ -10,9 +10,11 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 GUILD_IDS = [int(gid.strip()) for gid in os.getenv("DEBUG_GUILD_ID", "").split(",") if gid.strip()]
 AUTHORIZED_USER_ID = int(os.getenv("DEV"))
 
-# メインプログラム
 class MainProcess(Bot):
     def __init__(self):
+        """DevelopperPortal側の設定
+        全インテンツを有効化が必須
+        """
         intents = discord.Intents.default()
         intents.message_content = True
         intents.members = True
@@ -21,6 +23,7 @@ class MainProcess(Bot):
 
         self.add_listener(self.on_application_command_error)
 
+    # 認証サーバーの確認
     async def on_ready(self):
         COLOR.text(f"> Activating: {self.user}", COLOR.Log)
         COLOR.text("> Authorized servers:", COLOR.Data)
@@ -37,6 +40,7 @@ class MainProcess(Bot):
                 print(f"・ID: {guild_id} → ❌ HTTPエラー: {e}")
         COLOR.text("> Activated!", COLOR.Log)
 
+    # エラーハンドラー
     async def on_application_command_error(self, ctx: discord.ApplicationContext, error):
         COLOR.text(f"[ERROR] {ctx.command} にてエラー: {type(error).__name__}: {error}", COLOR.Error)
 
@@ -47,7 +51,7 @@ class MainProcess(Bot):
         elif isinstance(error, commands.CommandInvokeError):
             await ctx.respond(f"⚠️ 実行中にエラーが発生しました: `{error.original}`", ephemeral=True)
         else:
-            await ctx.respond("❌ 未知のエラーが発生しました。", ephemeral=True)
+            await ctx.respond("❌ エラーが発生しました。Lakeに問い合わせてください。", ephemeral=True)
 
 # Botの立ち上げとCogの登録
 async def main():
@@ -58,6 +62,7 @@ async def main():
             bot.load_extension(f"cogs.{file[:-3]}")
     await bot.start(DISCORD_TOKEN)
 
+# メインプロセスの実行
 if __name__ == "__main__":
     import asyncio
     try:

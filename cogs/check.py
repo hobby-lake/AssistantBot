@@ -14,38 +14,30 @@ class CheckCommand(commands.Cog):
 )
     async def check(self, ctx: ApplicationContext):
         embed = Embed(
-            title="🛠️ Botステータス確認",
-            description="Botの稼働状況とモジュールの読み込み状況を確認します。",
-            color=0x00BFFF  # 任意のカラーコード
+            title="🛠️ Bot情報の確認",
+            color=0x00ff7f  # 任意のカラーコード
         )
 
-        # ✅ モジュールチェック
-        modules_to_check = ["src.JSON", "src.COLOR", "src.SECURE"]
-        module_statuses = []
-        for mod in modules_to_check:
-            try:
-                importlib.import_module(mod)
-                module_statuses.append(f"`{mod}`: ✅")
-            except Exception as e:
-                module_statuses.append(f"`{mod}`: ❌ ({type(e).__name__})")
-
-        embed.add_field(name="📦 モジュールチェック", value="\n".join(module_statuses), inline=False)
-
-        # ✅ Cog情報
+        # ✅ コマンド情報
         loaded_cogs = list(self.bot.cogs.keys())
         total_cogs = len(loaded_cogs)
 
-        embed.add_field(name="🧩 読み込み済みのCog", value=f"{total_cogs} 個", inline=True)
+        embed.add_field(name="🧩 有効なコマンド・コマンドグループ", value=f"{total_cogs} 個", inline=True)
         embed.add_field(
-            name="🧪 Cog一覧",
+            name="🧪 以下一覧",
             value="\n".join(f"・{name}" for name in loaded_cogs) if loaded_cogs else "（なし）",
             inline=False
         )
 
-        # ✅ OAuth2リンク
+        # リリースノート
         embed.add_field(
-            name="🔗 コマンド更新リンク",
-            value="[OAuth2 リンク](https://discord.com/oauth2/authorize?client_id=1380828889156423761&permissions=8&integration_type=0&scope=bot+applications.commands)",
+            name="📄 リリースノート Ver2.0.4",
+            value=("""
+                コード全体を大きく修正
+                /ticket_closを削除
+                /mng get_membersの不具合を修正
+                /bosyuのUIとその動作の一部を変更
+                """),
             inline=False
         )
 

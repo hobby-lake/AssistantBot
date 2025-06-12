@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 from discord.commands import slash_command
-from discord.ui import Select
 from discord import ApplicationContext
 from src import JSON
 
@@ -44,7 +43,6 @@ class GameSelectView(discord.ui.View):
             self.add_item(NextButton(self))
         await interaction.response.edit_message(view=self)
 
-
 class GameSelect(discord.ui.Select):
     def __init__(self, options, parent_bosyu_view):
         super().__init__(
@@ -59,7 +57,6 @@ class GameSelect(discord.ui.Select):
         self.parent_bosyu_view.selected_role_id = int(self.values[0])
         await interaction.response.send_message("ロールを選択しました！", ephemeral=True)
 
-
 class PrevButton(discord.ui.Button):
     def __init__(self, view: GameSelectView):
         super().__init__(label="<< 前", style=discord.ButtonStyle.secondary)
@@ -70,7 +67,6 @@ class PrevButton(discord.ui.Button):
             self.view_ref.current_page -= 1
             await self.view_ref.update_select(interaction)
 
-
 class NextButton(discord.ui.Button):
     def __init__(self, view: GameSelectView):
         super().__init__(label="次 >>", style=discord.ButtonStyle.secondary)
@@ -80,7 +76,6 @@ class NextButton(discord.ui.Button):
         if self.view_ref.current_page < self.view_ref.page_count - 1:
             self.view_ref.current_page += 1
             await self.view_ref.update_select(interaction)
-
 
 # モーダル
 class BosyuModal(discord.ui.Modal):
@@ -95,7 +90,6 @@ class BosyuModal(discord.ui.Modal):
         self.parent_view.人数 = self.children[0].value
         self.parent_view.詳細 = self.children[1].value
         await interaction.response.send_message("内容を保存しました。完了ボタンを押してください。", ephemeral=True)
-
 
 # UIビュー
 class BosyuUI(discord.ui.View):
@@ -130,87 +124,102 @@ class BosyuUI(discord.ui.View):
             await interaction.response.send_message("ロールが選択されていません。", ephemeral=True)
             return
 
-        msg = (
-            f"{interaction.user.mention}さんが🎮 <@&{self.selected_role_id}> を募集中です！\n"
-            f"👥 {self.人数}名の参加をお待ちしてます！\n"
-            f"📝 募集詳細：{self.詳細 or 'なし'}"
+        view = ParticipationView(self)
+
+        embed = discord.Embed(
+            title="🎮 募集中",
+            description=f"<@&{self.selected_role_id}> の募集が開始されました！",
+            color=discord.Color.blue()
         )
-        await interaction.response.send_message(
-            msg,
-            view=ParticipationView(self),
-            ephemeral=False,
-            allowed_mentions=discord.AllowedMentions(roles=True)
-        )
+        embed.add_field(name="👥 募集人数", value=f"0/{self.人数}人", inline=False)
+        embed.add_field(name="✅ 参加者", value="なし", inline=False)
+        embed.add_field(name="👀 観戦者", value="なし", inline=False)
+        embed.add_field(name="📝 詳細", value=self.詳細 or "なし", inline=False)
+
+        await interaction.response.send_message(embed=embed, view=view, allowed_mentions=discord.AllowedMentions(roles=True))
+        view.message = await interaction.original_response()
         self.stop()
 
-
-# 参加/観戦/終了用の別ビュー
 class ParticipationView(discord.ui.View):
     def __init__(self, bosyu_view: BosyuUI):
         super().__init__(timeout=None)
         self.bosyu_view = bosyu_view
-        self.joined_users = {}   # user_id: mention
-        self.watching_users = set()  # user_id
+        self.joined_users = {}
+        self.watching_users = {}
+        self.message = None
+
+    async def update_embed(self):
+        embed = discord.Embed(
+            title="🎮 募集中",
+            description=f"<@&{self.bosyu_view.selected_role_id}> の募集が行われています！",
+            color=discord.Color.blue()
+        )
+        embed.add_field(
+            name="👥 募集人数",
+            value=f"{len(self.joined_users)}/{int(self.bosyu_view.人数)}人",
+            inline=False
+        )
+        embed.add_field(
+            name="✅ 参加者",
+            value="\n".join(self.joined_users.values()) or "なし",
+            inline=False
+        )
+        embed.add_field(
+            name="👀 観戦者",
+            value="\n".join(self.watching_users.values()) or "なし",
+            inline=False
+        )
+        embed.add_field(
+            name="📝 詳細",
+            value=self.bosyu_view.詳細 or "なし",
+            inline=False
+        )
+        await self.message.edit(embed=embed, view=self)
 
     @discord.ui.button(label="参加する", style=discord.ButtonStyle.primary)
     async def join(self, button: discord.ui.Button, interaction: discord.Interaction):
         user_id = interaction.user.id
-
         if user_id == self.bosyu_view.owner_id:
             await interaction.response.send_message("募集者は参加できません。", ephemeral=True)
             return
-
         if user_id in self.joined_users:
             await interaction.response.send_message("すでに参加しています。", ephemeral=True)
             return
-
         if user_id in self.watching_users:
-            await interaction.response.send_message("観戦を選択済みです。参加と観戦はどちらか一方のみ可能です。", ephemeral=True)
+            await interaction.response.send_message("観戦と参加は同時にできません。", ephemeral=True)
             return
 
         self.joined_users[user_id] = interaction.user.mention
         self.bosyu_view.remaining -= 1
 
-        await interaction.response.send_message(f"{interaction.user.mention} が参加しました！（残り: {self.bosyu_view.remaining}人）", ephemeral=False)
+        await interaction.response.send_message("参加しました！", ephemeral=True)
+        await self.update_embed()
 
         if self.bosyu_view.remaining <= 0:
-            for child in self.children:
-                if isinstance(child, discord.ui.Button) and child.label == "参加する":
-                    child.disabled = True
-
-            # ✅ Embed で完了表示
-            embed = discord.Embed(
-                title="✅ 募集完了！",
-                description=f"<@&{self.bosyu_view.selected_role_id}> の募集が締め切られました。",
-                color=discord.Color.green()
-            )
-            embed.add_field(name="👥 参加者一覧", value="\n".join(self.joined_users.values()), inline=False)
-
-            await interaction.message.edit(embed=embed, view=self)
+            button.disabled = True
+            await self.update_embed()
 
     @discord.ui.button(label="観戦する", style=discord.ButtonStyle.secondary)
     async def watch(self, button: discord.ui.Button, interaction: discord.Interaction):
         user_id = interaction.user.id
-
         if user_id == self.bosyu_view.owner_id:
             await interaction.response.send_message("募集者は観戦できません。", ephemeral=True)
             return
-
-        if user_id in self.joined_users:
-            await interaction.response.send_message("すでに参加しています。参加と観戦はどちらか一方のみ可能です。", ephemeral=True)
-            return
-
         if user_id in self.watching_users:
-            await interaction.response.send_message("すでに観戦を希望しています。", ephemeral=True)
+            await interaction.response.send_message("すでに観戦しています。", ephemeral=True)
+            return
+        if user_id in self.joined_users:
+            await interaction.response.send_message("観戦と参加は同時にできません。", ephemeral=True)
             return
 
-        self.watching_users.add(user_id)
-        await interaction.response.send_message(f"{interaction.user.mention} が観戦希望です！", ephemeral=False)
+        self.watching_users[user_id] = interaction.user.mention
+        await interaction.response.send_message("観戦希望として登録しました。", ephemeral=True)
+        await self.update_embed()
 
     @discord.ui.button(label="募集終了", style=discord.ButtonStyle.danger)
     async def end(self, button: discord.ui.Button, interaction: discord.Interaction):
         if interaction.user.id != self.bosyu_view.owner_id:
-            await interaction.response.send_message("このボタンは募集者のみ使用できます。", ephemeral=True)
+            await interaction.response.send_message("このボタンは募集者のみが使用できます。", ephemeral=True)
             return
 
         for child in self.children:
@@ -219,12 +228,14 @@ class ParticipationView(discord.ui.View):
 
         embed = discord.Embed(
             title="🛑 募集終了",
-            description="募集者によって募集が終了されました。",
+            description=f"<@&{self.bosyu_view.selected_role_id}> の募集が終了されました。",
             color=discord.Color.red()
         )
-        embed.add_field(name="👥 参加者一覧", value="\n".join(self.joined_users.values()) or "なし", inline=False)
+        embed.add_field(name="👥 参加者", value="\n".join(self.joined_users.values()) or "なし", inline=False)
+        embed.add_field(name="👀 観戦者", value="\n".join(self.watching_users.values()) or "なし", inline=False)
+        embed.add_field(name="📝 詳細", value=self.bosyu_view.詳細 or "なし", inline=False)
 
-        await interaction.message.edit(embed=embed, view=self)
+        await self.message.edit(embed=embed, view=self)
         await interaction.response.send_message("募集を終了しました。", ephemeral=True)
 
 # コグ本体
@@ -242,7 +253,6 @@ class BosyuCog(commands.Cog):
 
         view = BosyuUI(interaction=ctx.interaction, roles=guild.roles)
         await ctx.respond("募集内容を入力してください：", view=view, ephemeral=True)
-
 
 def setup(bot):
     bot.add_cog(BosyuCog(bot))

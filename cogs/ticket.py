@@ -2,6 +2,7 @@ import discord
 from datetime import datetime
 import re
 
+# チケット機能の根幹
 class Ticket(discord.Cog):
     def __init__(self, bot: discord.Bot):
         self.bot = bot
@@ -9,31 +10,6 @@ class Ticket(discord.Cog):
     @discord.Cog.listener()
     async def on_ready(self):
         self.bot.add_view(TicketCreateButton())
-
-    @discord.slash_command(name="ticket_close", description="チケットを閉じてアーカイブします")
-    async def ticket_close(self, ctx: discord.ApplicationContext):
-        channel = ctx.channel
-
-        if not self.is_ticket_channel(channel.name):
-            await ctx.respond("このチャンネルはチケットではありません。", ephemeral=True)
-            return
-
-        archive_category = await self.get_or_create_category(ctx.guild, "アーカイブ")
-
-        # 作成者のIDをチャンネルトピックから取得
-        match = re.search(r"user_id:(\d+)", channel.topic or "")
-        ticket_owner = ctx.guild.get_member(int(match.group(1))) if match else None
-
-        await channel.edit(category=archive_category)
-
-        # 明示的に everyone の閲覧・書き込みを禁止
-        await channel.set_permissions(ctx.guild.default_role, read_messages=False, send_messages=False)
-
-        # 作成者には閲覧のみ許可（必要なら）
-        if ticket_owner:
-            await channel.set_permissions(ticket_owner, read_messages=True, send_messages=False)
-
-        await ctx.respond(f"{channel.mention} をアーカイブしました（閲覧のみ可能）。")
 
     @staticmethod
     def is_ticket_channel(name: str) -> bool:
@@ -43,6 +19,7 @@ class Ticket(discord.Cog):
         category = discord.utils.get(guild.categories, name=name)
         return category or await guild.create_category(name)
 
+# チケット作成ボタン
 class TicketCreateButton(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -77,6 +54,7 @@ class TicketCreateButton(discord.ui.View):
             ephemeral=True
         )
 
+# チケットを閉じるボタン
 class TicketCloseButton(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -97,16 +75,13 @@ class TicketCloseButton(discord.ui.View):
         if not archive_category:
             archive_category = await guild.create_category("アーカイブ")
 
-        # 作成者をチャンネルトピックから取得
         match = re.search(r"user_id:(\d+)", channel.topic or "")
         ticket_owner = guild.get_member(int(match.group(1))) if match else None
 
         await channel.edit(category=archive_category)
 
-        # 全員から閲覧・書き込みを剥奪
         await channel.set_permissions(guild.default_role, read_messages=False, send_messages=False)
 
-        # 作成者にのみ閲覧許可（必要なら）
         if ticket_owner:
             await channel.set_permissions(ticket_owner, read_messages=True, send_messages=False)
 

@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from discord.commands import slash_command, SlashCommandGroup, Option
+from discord.commands import SlashCommandGroup
 from discord import ApplicationContext
 from src import JSON, COLOR, SECURE
 import os
@@ -129,7 +129,7 @@ class ManageGroup(commands.Cog):
             return
         
         guild = ctx.guild
-        if os.path.exists(f".\\data\\member_dara\\M{guild.id}.json"):
+        if not os.path.exists(f".\\data\\member_data\\M{guild.id}.json"):
             members_data = {}
             async for member in guild.fetch_members(limit=None):
                 if not member.bot and members_data.get(member.id) != {}:
@@ -188,7 +188,6 @@ class ManageGroup(commands.Cog):
 
         category = discord.utils.get(ctx.guild.categories, name="問い合わせフォーム")
         if category is None:
-            # カテゴリがなければ作成（権限はBotが持っている前提）
             category = await ctx.guild.create_category("問い合わせフォーム")
             channel = await ctx.guild.create_text_channel("チケットセンター",category=category,topic="問い合わせ用のチケットを発行するチャンネルです。")
 

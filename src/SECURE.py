@@ -1,3 +1,4 @@
+# コマンド実行権限の確認
 from discord import ApplicationContext
 from src import COLOR
 import os

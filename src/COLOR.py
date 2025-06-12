@@ -1,18 +1,16 @@
+# コンソール用色付き文字出力
 import os
 
-os.system('')  # ANSIエスケープシーケンスを有効にする
+os.system('')
 
-# 代表的な色
 NORMAL = '\033[0m'
 INFO_BLUE = '\033[94m'
 INFO_GREEN = '\033[92m'
 WARN = '\033[93m'
 ERR = '\033[91m'
 
-# フォントスタイル
 BOLD = '\033[1m'
 
-# 末尾制御
 _END = '\033[0m'
 
 def text(text, pattern=()):
