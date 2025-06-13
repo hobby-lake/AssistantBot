@@ -128,7 +128,7 @@ class BosyuUI(discord.ui.View):
 
         embed = discord.Embed(
             title="🎮 募集中",
-            description=f"<@&{self.selected_role_id}> の募集が開始されました！",
+            description=f"<{interaction.user.mention}が@&{self.selected_role_id}> の募集を開始しました！",
             color=discord.Color.blue()
         )
         embed.add_field(name="👥 募集人数", value=f"0/{self.人数}人", inline=False)
