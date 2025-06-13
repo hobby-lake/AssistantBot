@@ -1,7 +1,6 @@
 from discord.ext import commands
 from discord.commands import slash_command
 from discord import ApplicationContext, Embed
-import importlib
 
 class CheckCommand(commands.Cog):
     def __init__(self, bot):
@@ -11,7 +10,7 @@ class CheckCommand(commands.Cog):
     name="check",
     description="Botが動作しているか確認します。リリースノートも送信します。",
     guild_ids=None
-)
+    )
     async def check(self, ctx: ApplicationContext):
         embed = Embed(
             title="🛠️ Bot情報の確認",
@@ -31,12 +30,12 @@ class CheckCommand(commands.Cog):
 
         # リリースノート
         embed.add_field(
-            name="📄 リリースノート Ver2.0.4",
+            name="📄 リリースノート Ver2.1.0",
             value=("""
-                コード全体を大きく修正
-                /ticket_closを削除
-                /mng get_membersの不具合を修正
-                /bosyuのUIとその動作の一部を変更
+                配信カレンダー機能を実装
+                /mng addstreamer
+                /mng initcalendar
+                詳細はスラッシュコマンド一覧から
                 """),
             inline=False
         )

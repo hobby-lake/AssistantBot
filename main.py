@@ -13,7 +13,7 @@ AUTHORIZED_USER_ID = int(os.getenv("DEV"))
 class MainProcess(Bot):
     def __init__(self):
         """DevelopperPortal側の設定
-        全インテンツを有効化が必須
+        全インテンツの有効化が必須
         """
         intents = discord.Intents.default()
         intents.message_content = True
