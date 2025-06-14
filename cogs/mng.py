@@ -2,13 +2,12 @@ import discord
 from discord.ext import commands
 from discord.commands import SlashCommandGroup, Option
 from discord import ApplicationContext
-from src import JSON, COLOR, SECURE, STREAM
+from src import JSON, COLOR, SECURE, STREAM, PATH
 import os
 from dotenv import load_dotenv
 from datetime import date
 from cogs.ticket import TicketCreateButton
 import re
-from pathlib import Path
 
 today = date.today()
 load_dotenv()
@@ -95,7 +94,7 @@ class PaginatedLinkRoleVC_UI(discord.ui.View):
             selected_voice_ids = [int(v) for v in view.voice_select.values]
 
             guild_id = interaction.guild.id
-            data_path = f".\\data\\role_data\\L{guild_id}.json"
+            data_path = str(PATH.get_json(guild_id=guild_id,category="role"))
             if os.path.exists(data_path):
                 data = JSON.load(data_path)
             else:
@@ -109,7 +108,7 @@ class PaginatedLinkRoleVC_UI(discord.ui.View):
                 f"ボイスチャンネル: {', '.join(f'<#{vid}>' for vid in selected_voice_ids)}",
                 ephemeral=True
             )
-            COLOR.text(f"✅ リンク情報を `L{selected_role_id}.json` に保存しました！", COLOR.Log)
+            COLOR.text(f"✅ リンク情報を `ROL{selected_role_id}.json` に保存しました！", COLOR.Log)
             view.stop()
 
     async def refresh(self, interaction: discord.Interaction):
@@ -138,7 +137,8 @@ class ManageGroup(commands.Cog):
             return
         
         guild = ctx.guild
-        if not os.path.exists(f".\\data\\member_data\\M{guild.id}.json"):
+        save_path = str(PATH.get_json(guild_id=guild.id,category="member"))
+        if not os.path.exists(save_path):
             members_data = {}
             async for member in guild.fetch_members(limit=None):
                 if not member.bot and members_data.get(member.id) != {}:
@@ -148,9 +148,9 @@ class ManageGroup(commands.Cog):
                         "last_updated": today.strftime("%Y-%m-%d")
                     }
                     
-            JSON.save(members_data, f".\\data\\member_data\\M{guild.id}.json")
+            JSON.save(members_data, save_path)
 
-            COLOR.text(f"✅ {len(members_data)}人のメンバー情報を `M{guild.id}.json` に保存しました！", COLOR.Log)
+            COLOR.text(f"✅ {len(members_data)}人のメンバー情報を `MEM{guild.id}.json` に保存しました！", COLOR.Log)
             await ctx.respond(f"{len(members_data)}人のメンバー情報をあらたに作成しました！\n（実行者: {ctx.author.mention}）")
         else:
             await ctx.respond(f"❌ メンバー情報は既に存在します！", ephemeral=True)
@@ -211,13 +211,13 @@ class ManageGroup(commands.Cog):
     async def add_streamer(
         self,
         ctx: discord.ApplicationContext,
-        name: Option(str, "登録用の英数字ID（例: Asaba_Yuria）"),  # type: ignore
+        name: Option(str, "登録用の英数字ID（例: Asaha_Yuria）"),  # type: ignore
         display_name: Option(str, "表示名（日本語など自由）"),  # type: ignore
         youtube_channel_id: Option(str, "YouTubeのチャンネルID（任意）", required=False),  # type: ignore
         twitch_username: Option(str, "TwitchのユーザーID（ログイン名・任意）", required=False)  # type: ignore
     ):
         guild_id = ctx.guild.id
-        path = f".\\data\\streamer_data\\S{guild_id}.json"
+        path = str(PATH.get_json(guild_id=guild_id,category="streamer"))
         data = JSON.load(path)
 
         # 英数字チェック
@@ -249,7 +249,7 @@ class ManageGroup(commands.Cog):
         channel: Option(discord.TextChannel, "配信予定を表示するチャンネル") # type: ignore
     ):
         guild_id = ctx.guild.id
-        path = f".\\data\\streamer_data\\S{guild_id}.json"
+        path = str(PATH.get_json(guild_id=guild_id,category="streamer"))
         config = JSON.load(path)
 
         if name not in config:

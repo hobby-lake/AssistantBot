@@ -1,7 +1,7 @@
 from discord.ext import commands
 from discord.commands import SlashCommandGroup, Option
 from discord import ApplicationContext, Member
-from src import JSON, COLOR, SECURE
+from src import JSON, COLOR, SECURE, PATH
 import os
 from dotenv import load_dotenv
 
@@ -18,7 +18,7 @@ class PointManager(commands.Cog):
     async def plus(self, ctx: ApplicationContext, target: Option(Member, "対象ユーザー", required = False, default=None)): # type:ignore
         await ctx.defer()
         guild=ctx.guild
-        data_path = f".\\data\\member_data\\M{guild.id}.json"
+        data_path = str(PATH.get_json(guild_id=guild.id,category="member"))
         data = JSON.load(data_path)
 
         if target == None:
@@ -34,7 +34,7 @@ class PointManager(commands.Cog):
         if await SECURE.Restrict(ctx) == False:
             return
         guild=ctx.guild
-        data_path = f".\\data\\member_data\\M{guild.id}.json"
+        data_path = str(PATH.get_json(guild_id=guild.id,category="member"))
         data = JSON.load(data_path)
 
         data[str(target.id)]["point"] = data[str(target.id)]["point"] + amount
@@ -48,7 +48,7 @@ class PointManager(commands.Cog):
         if await SECURE.Restrict(ctx) == False:
             return
         guild=ctx.guild
-        data_path = f".\\data\\member_data\\M{guild.id}.json"
+        data_path = str(PATH.get_json(guild_id=guild.id,category="member"))
         data = JSON.load(data_path)
         
         if not data[str(target.id)]["point"] < amount:

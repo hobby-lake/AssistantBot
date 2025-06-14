@@ -30,12 +30,9 @@ class CheckCommand(commands.Cog):
 
         # リリースノート
         embed.add_field(
-            name="📄 リリースノート Ver2.1.0",
+            name="📄 リリースノート Ver2.1.2",
             value=("""
-                配信カレンダー機能を実装
-                /mng addstreamer
-                /mng initcalendar
-                詳細はスラッシュコマンド一覧から
+                軽微なコード修正
                 """),
             inline=False
         )
