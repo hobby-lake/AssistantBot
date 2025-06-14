@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from discord.commands import slash_command
 from discord import ApplicationContext
-from src import JSON
+from src import JSON, PATH
 
 # ゲーム選択セレクトメニュー
 class GameSelectView(discord.ui.View):
@@ -13,7 +13,7 @@ class GameSelectView(discord.ui.View):
         self.roles = roles
         self.current_page = 0
 
-        self.base_data = JSON.load(f".\\data\\role_data\\L{interaction.guild.id}.json")
+        self.base_data = JSON.load(PATH.get_json(guild_id=interaction.guild.id, category="role"))
         self.valid_role_ids = [str(rid) for rid in self.base_data.keys()]
         self.filtered_roles = [role for role in self.roles if str(role.id) in self.valid_role_ids and not role.managed]
 
