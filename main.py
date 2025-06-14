@@ -3,7 +3,7 @@ import discord
 from discord.ext import commands
 from discord import Bot
 from dotenv import load_dotenv
-from src import JSON,COLOR
+from src import COLOR
 
 load_dotenv()
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
