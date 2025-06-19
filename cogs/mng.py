@@ -118,7 +118,7 @@ class PaginatedLinkRoleVC_UI(discord.ui.View):
 
 async def name_autocomplete(ctx: discord.AutocompleteContext):
     guild_id = ctx.interaction.guild_id
-    path = f".\\data\\streamer_data\\S{guild_id}.json"
+    path = PATH.get_json(guild_id=guild_id, category="streamer")
     config = JSON.load(path)
     return list(config.keys())[:25]
 
