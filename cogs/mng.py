@@ -144,18 +144,30 @@ class ManageGroup(commands.Cog):
             members_data = JSON.load(save_path)
 
         async for member in guild.fetch_members(limit=None):
-            if not member.bot and members_data.get(member.id) != {} and member.id not in members_data:
+            if not member.bot and member.id not in members_data:
                 COLOR.text(f"{member.name} ({member.id}) の情報を記録しました。", COLOR.Data)
                 members_data[member.id] = {
                     "name": member.name,
                     "point": 0,
                     "last_updated": today.strftime("%Y-%m-%d")
                 }
+            else:
+                if members_data[member.id]["name"] != member.name:
+                    members_data[member.id]["name"] = member.name
+                    members_data[member.id]["last_updated"] = today.strftime("%Y-%m-%d")
+                    COLOR.text(f"{member.display_name} の名前を更新しました。", COLOR.WARN)
                 
         JSON.save(members_data, save_path)
 
+        added = sum(1 for m_id in members_data if "point" not in members_data[m_id])
+
         COLOR.text(f"✅ {len(members_data)}人のメンバー情報を `MEM{guild.id}.json` に保存しました！", COLOR.Log)
-        await ctx.respond(f"{len(members_data)}人のメンバー情報を更新しました！\n（実行者: {ctx.author.mention}）")
+        await ctx.respond(
+            f"✅ メンバー情報を更新しました！\n"
+            f"・新規追加: {added}人\n"
+            f"・合計記録人数: {len(members_data)}人\n"
+            f"（実行者: {ctx.author.mention}）"
+        )
 
     @mng.command(name="link", description="ロールとボイスチャンネルをカテゴリごとに紐づけ")
     async def link(self, ctx: ApplicationContext):
