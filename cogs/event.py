@@ -21,27 +21,39 @@ class BasicInfoModal(discord.ui.Modal):
         self.add_item(self.time)
         self.add_item(self.location)
 
-    async def on_submit(self, interaction: discord.Interaction):
+    async def callback(self, interaction: discord.Interaction):
         try:
-            print("✅ on_submit called")  # デバッグ用
-            await interaction.response.send_message("✅ モーダル送信を受け取りました", ephemeral=True)
+            info = {
+                "author": self.author,
+                "name": self.name.value,
+                "date": self.date.value,
+                "time": self.time.value,
+                "location": self.location.value,
+                "start": datetime.datetime.strptime(f"{self.date.value} {self.time.value}", "%Y-%m-%d %H:%M"),
+                "end": None
+            }
+
+            # 一時保存（必要ならここで interaction.client に保存しても良い）
+            view = ProceedView(bot=self.bot, author=self.author, base_info=info)
+            await interaction.response.send_message(
+                "✅ 基本情報を受け取りました。\n続けて「付与ポイント」の設定を行うには下のボタンを押してください。",
+                ephemeral=True,
+                view=view
+            )
+
         except Exception as e:
             import traceback
             traceback.print_exc()
-            try:
-                await interaction.response.send_message(
-                    f"⚠️ エラーが発生しました: `{e}`", ephemeral=True
-                )
-            except discord.InteractionResponded:
-                await interaction.followup.send(
-                    f"⚠️ フォローアップエラー: `{e}`", ephemeral=True
-                )
+            await interaction.response.send_message(f"エラーが発生しました: `{e}`", ephemeral=True)
+
 
 class PointsInfoModal(discord.ui.Modal):
-    def __init__(self, bot, author: discord.Member):
+    def __init__(self, bot, author: discord.Member, base_info):
         super().__init__(title="付与ポイント情報 (任意)")
         self.bot = bot
         self.author = author
+
+        self.base_info = base_info
 
         self.reward = discord.ui.InputText(label="参加賞ポイント", placeholder="例: 10", required=False)
         self.top_points = discord.ui.InputText(label="首位ポイント", placeholder="例: 100", required=False)
@@ -53,10 +65,8 @@ class PointsInfoModal(discord.ui.Modal):
         self.add_item(self.offset)
         self.add_item(self.cutoff)
 
-    async def on_submit(self, interaction: discord.Interaction):
-        # 基本情報取得
-        info = getattr(interaction.client, "_temp_event_info", None)
-        if not info or info["author"].id != self.author.id:
+    async def callback(self, interaction: discord.Interaction):
+        if not self.base_info or self.base_info["author"].id != self.author.id:
             await interaction.response.send_message("エラー: 基本情報が見つかりません。もう一度やり直してください。", ephemeral=True)
             return
         
@@ -73,17 +83,17 @@ class PointsInfoModal(discord.ui.Modal):
         cutoff = to_int_or_zero(self.cutoff.value)
 
         guild = interaction.guild
-        author = info["author"]
-        start = info["start"]
-        end = info["end"]
+        author = self.base_info["author"]
+        start = self.base_info["start"]
+        end = self.base_info["end"]
 
         # Discordのイベント作成
         event = await guild.create_scheduled_event(
-            name=info["name"],
+            name=self.base_info["name"],
             start_time=start,
             end_time=end,
             description=f"開催者: {author.display_name}",
-            location=info["location"]
+            location=self.base_info["location"]
         )
         event_id = str(event.id)
         guild_id = str(guild.id)
@@ -97,7 +107,7 @@ class PointsInfoModal(discord.ui.Modal):
         # index更新
         index = JSON.load(index_file)
         index[event_id] = {
-            "name": info["name"],
+            "name": self.base_info["name"],
             "開催者": author.id,
             "開始": start.isoformat()
         }
@@ -106,9 +116,9 @@ class PointsInfoModal(discord.ui.Modal):
         # イベント詳細保存
         event_data = {
             "開催者": author.id,
-            "名称": info["name"],
-            "日程": [info["date"], info["time"]],
-            "開催場所": info["location"],
+            "名称": self.base_info["name"],
+            "日程": [self.base_info["date"], self.base_info["time"]],
+            "開催場所": self.base_info["location"],
             "参加賞": reward,
             "付与ポイント": {
                 "首位": top_points,
@@ -121,11 +131,26 @@ class PointsInfoModal(discord.ui.Modal):
         # 一時保存データクリア
         delattr(interaction.client, "_temp_event_info")
 
-        await interaction.response.send_message(f"✅ イベント `{info['name']}` を作成しました！", ephemeral=True)
+        await interaction.response.send_message(f"✅ イベント `{self.base_info['name']}` を作成しました！", ephemeral=True)
 
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
         await interaction.response.send_message("❌ イベント作成中にエラーが発生しました。", ephemeral=True)
 
+class ProceedView(discord.ui.View):
+    def __init__(self, bot, author, base_info):
+        super().__init__(timeout=300)
+        self.bot = bot
+        self.author = author
+        self.base_info = base_info
+
+    @discord.ui.button(label="次へ", style=discord.ButtonStyle.primary)
+    async def proceed_button(self, button, interaction):
+        if interaction.user != self.author:
+            await interaction.response.send_message("このボタンはあなたのものではありません。", ephemeral=True)
+            return
+        await interaction.response.send_modal(
+            PointsInfoModal(bot=self.bot, author=self.author, base_info=self.base_info)
+        )
 
 class EventManager(commands.Cog):
     def __init__(self, bot):
@@ -137,9 +162,6 @@ class EventManager(commands.Cog):
     async def create(self, ctx: ApplicationContext):
         modal = BasicInfoModal(bot=self.bot, author=ctx.author)
         await ctx.send_modal(modal)
-
-    # 省略： end コマンドは以前のままでOK
-
 
 def setup(bot):
     bot.add_cog(EventManager(bot))

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import calendar
 import discord
 from discord import ApplicationContext
-from src import JSON
+from src import JSON, PATH
 import requests
 
 YOUTUBE_API_KEY = "AIzaSyDPDpAG1BNYFT7xpU2b-XneoqTSCC7nWw8"
@@ -187,7 +187,8 @@ def build_schedule_embed(ctx: ApplicationContext, streamer_id, schedule_list):
             future.append(formatted)
 
     # 配信者の表示名取得
-    streamer_data = JSON.load(f".\\data\\streamer_data\\S{ctx.guild.id}.json")
+    path = PATH.get_json(ctx.guild.id, "streamer")
+    streamer_data = JSON.load(path)
     streamer_name = streamer_data[streamer_id]["display_name"]
 
     embed = discord.Embed(title=f"📅 {streamer_name}の配信予定", color=0x00aaff)
