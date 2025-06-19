@@ -144,17 +144,17 @@ class ManageGroup(commands.Cog):
             members_data = JSON.load(save_path)
 
         async for member in guild.fetch_members(limit=None):
-            if not member.bot and member.id not in members_data:
-                COLOR.text(f"{member.name} ({member.id}) の情報を記録しました。", COLOR.Data)
-                members_data[member.id] = {
+            if not member.bot and str(member.id) not in members_data:
+                COLOR.text(f"{member.name} ({str(member.id)}) の情報を記録しました。", COLOR.Data)
+                members_data[str(member.id)] = {
                     "name": member.name,
                     "point": 0,
                     "last_updated": today.strftime("%Y-%m-%d")
                 }
             else:
-                if members_data[member.id]["name"] != member.name:
-                    members_data[member.id]["name"] = member.name
-                    members_data[member.id]["last_updated"] = today.strftime("%Y-%m-%d")
+                if members_data[str(member.id)]["name"] != member.name:
+                    members_data[str(member.id)]["name"] = member.name
+                    members_data[str(member.id)]["last_updated"] = today.strftime("%Y-%m-%d")
                     COLOR.text(f"{member.display_name} の名前を更新しました。", COLOR.WARN)
                 
         JSON.save(members_data, save_path)
