@@ -144,29 +144,31 @@ class ManageGroup(commands.Cog):
             members_data = JSON.load(save_path)
 
         async for member in guild.fetch_members(limit=None):
-            if not member.bot and str(member.id) not in members_data:
-                COLOR.text(f"{member.name} ({str(member.id)}) の情報を記録しました。", COLOR.Data)
-                members_data
-                members_data[str(member.id)] = {
-                    "name": member.name,
-                    "point": 0,
-                    "last_updated": today.strftime("%Y-%m-%d")
-                }
-            else:
-                try:
-                    member_data = members_data.get(str(member.id), {})
-                    if member_data[str(member.id)]["name"] != member.name:
-                        member_data[str(member.id)]["name"] = member.name
-                        member_data[str(member.id)]["last_updated"] = today.strftime("%Y-%m-%d")
-                        COLOR.text(f"{member.display_name} の名前を更新しました。", COLOR.WARN)
-                except KeyError:
-                    if not member.bot:
-                        COLOR.text(f"{member.name} ({str(member.id)}) のデータが壊れているため再作成します。", COLOR.WARN)
+            if not member.bot:
+                if str(member.id) not in members_data:
+                    # 新規登録
+                    members_data[str(member.id)] = {
+                        "name": member.name,
+                        "point": 0,
+                        "last_updated": today.strftime("%Y-%m-%d")
+                    }
+                    COLOR.text(f"{member.name} ({str(member.id)}) の情報を記録しました。", COLOR.Data)
+                else:
+                    try:
+                        member_data = members_data[str(member.id)]
+                        if member_data.get("name") != member.name:
+                            member_data["name"] = member.name
+                            member_data["last_updated"] = today.strftime("%Y-%m-%d")
+                            COLOR.text(f"{member.display_name} の名前を更新しました。", COLOR.WARN)
+                    except Exception as e:
+                        # データが壊れている場合、最小限の値を保持して修復
+                        old_point = members_data.get(str(member.id), {}).get("point", 0)
                         members_data[str(member.id)] = {
                             "name": member.name,
-                            "point": 0,
+                            "point": old_point,
                             "last_updated": today.strftime("%Y-%m-%d")
                         }
+                        COLOR.text(f"{member.name} のデータが壊れていたため修復しました。", COLOR.WARN)
 
         JSON.save(members_data, save_path)
 
