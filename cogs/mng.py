@@ -160,13 +160,14 @@ class ManageGroup(commands.Cog):
                         member_data[str(member.id)]["last_updated"] = today.strftime("%Y-%m-%d")
                         COLOR.text(f"{member.display_name} の名前を更新しました。", COLOR.WARN)
                 except KeyError:
-                    COLOR.text(f"{member.name} ({str(member.id)}) のデータが壊れているため再作成します。", COLOR.WARN)
-                    members_data[str(member.id)] = {
-                        "name": member.name,
-                        "point": 0,
-                        "last_updated": today.strftime("%Y-%m-%d")
-                    }
-                    
+                    if not member.bot:
+                        COLOR.text(f"{member.name} ({str(member.id)}) のデータが壊れているため再作成します。", COLOR.WARN)
+                        members_data[str(member.id)] = {
+                            "name": member.name,
+                            "point": 0,
+                            "last_updated": today.strftime("%Y-%m-%d")
+                        }
+
         JSON.save(members_data, save_path)
 
         added = sum(1 for m_id in members_data if "point" not in members_data[m_id])
