@@ -144,25 +144,25 @@ class ManageGroup(commands.Cog):
             members_data = JSON.load(save_path)
 
         async for member in guild.fetch_members(limit=None):
-            if not member.bot and member.id not in members_data:
-                COLOR.text(f"{member.name} ({member.id}) の情報を記録しました。", COLOR.Data)
+            if not member.bot and str(member.id) not in members_data:
+                COLOR.text(f"{member.name} ({str(member.id)}) の情報を記録しました。", COLOR.Data)
                 members_data
-                members_data[member.id] = {
+                members_data[str(member.id)] = {
                     "name": member.name,
                     "point": 0,
                     "last_updated": today.strftime("%Y-%m-%d")
                 }
             else:
                 try:
-                    member_data = members_data.get(member.id, {})
-                    if member_data[member.id]["name"] != member.name:
-                        member_data[member.id]["name"] = member.name
-                        member_data[member.id]["last_updated"] = today.strftime("%Y-%m-%d")
+                    member_data = members_data.get(str(member.id), {})
+                    if member_data[str(member.id)]["name"] != member.name:
+                        member_data[str(member.id)]["name"] = member.name
+                        member_data[str(member.id)]["last_updated"] = today.strftime("%Y-%m-%d")
                         COLOR.text(f"{member.display_name} の名前を更新しました。", COLOR.WARN)
                 except KeyError:
                     if not member.bot:
-                        COLOR.text(f"{member.name} ({member.id}) のデータが壊れているため再作成します。", COLOR.WARN)
-                        members_data[member.id] = {
+                        COLOR.text(f"{member.name} ({str(member.id)}) のデータが壊れているため再作成します。", COLOR.WARN)
+                        members_data[str(member.id)] = {
                             "name": member.name,
                             "point": 0,
                             "last_updated": today.strftime("%Y-%m-%d")
