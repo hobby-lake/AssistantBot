@@ -26,7 +26,7 @@ class PointManager(commands.Cog):
             await ctx.respond(f"ポイント残高は{result}です。\n（実行者: {ctx.author.mention}）")
         else:
             result = data[str(target.id)]["point"]
-            await ctx.respond(f"{target.name}のポイント残高は{result}です。\n（実行者: {ctx.author.mention}）")
+            await ctx.respond(f"{target.display_name}のポイント残高は{result}です。\n（実行者: {ctx.author.mention}）")
         
     @point.command(name="plus", description="ポイントを付与します。")
     async def plus(self, ctx: ApplicationContext, target: Member, amount: int):
@@ -39,8 +39,8 @@ class PointManager(commands.Cog):
 
         data[str(target.id)]["point"] = data[str(target.id)]["point"] + amount
         JSON.save(data, data_path)
-        await ctx.respond(f"{target.name}に{amount}ポイントを付与しました。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）")
-        COLOR.text(f"{target.name}に{amount}ポイントを付与しました。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）",COLOR.Log)
+        await ctx.respond(f"{target.display_name}に{amount}ポイントを付与しました。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）")
+        COLOR.text(f"{target.display_name}に{amount}ポイントを付与しました。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）",COLOR.Log)
 
     @point.command(name="minus", description="ポイントを減らします。")
     async def plus(self, ctx: ApplicationContext, target: Member, amount: int):
@@ -54,11 +54,11 @@ class PointManager(commands.Cog):
         if not data[str(target.id)]["point"] < amount:
             data[str(target.id)]["point"] = data[str(target.id)]["point"] - amount
             JSON.save(data, data_path)
-            await ctx.respond(f"{target.name}のポイントを{amount}ポイント減らしました。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）")
-            COLOR.text(f"{target.name}のポイントを{amount}ポイント減らしました。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）", COLOR.Log)
+            await ctx.respond(f"{target.display_name}のポイントを{amount}ポイント減らしました。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）")
+            COLOR.text(f"{target.display_name}のポイントを{amount}ポイント減らしました。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）", COLOR.Log)
         else:
-            await ctx.respond(f"{target.name}のポイントが足りません。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）")
-            COLOR.text(f"{target.name}のポイントが足りません。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）", COLOR.WARN)
+            await ctx.respond(f"{target.display_name}のポイントが足りません。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）")
+            COLOR.text(f"{target.display_name}のポイントが足りません。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）", COLOR.WARN)
 
 def setup(bot):
     bot.add_cog(PointManager(bot))
