@@ -146,17 +146,27 @@ class ManageGroup(commands.Cog):
         async for member in guild.fetch_members(limit=None):
             if not member.bot and str(member.id) not in members_data:
                 COLOR.text(f"{member.name} ({str(member.id)}) の情報を記録しました。", COLOR.Data)
+                members_data
                 members_data[str(member.id)] = {
                     "name": member.name,
                     "point": 0,
                     "last_updated": today.strftime("%Y-%m-%d")
                 }
             else:
-                if members_data[str(member.id)]["name"] != member.name:
-                    members_data[str(member.id)]["name"] = member.name
-                    members_data[str(member.id)]["last_updated"] = today.strftime("%Y-%m-%d")
-                    COLOR.text(f"{member.display_name} の名前を更新しました。", COLOR.WARN)
-                
+                try:
+                    member_data = members_data.get(str(member.id), {})
+                    if member_data[str(member.id)]["name"] != member.name:
+                        member_data[str(member.id)]["name"] = member.name
+                        member_data[str(member.id)]["last_updated"] = today.strftime("%Y-%m-%d")
+                        COLOR.text(f"{member.display_name} の名前を更新しました。", COLOR.WARN)
+                except KeyError:
+                    COLOR.text(f"{member.name} ({str(member.id)}) のデータが壊れているため再作成します。", COLOR.WARN)
+                    members_data[str(member.id)] = {
+                        "name": member.name,
+                        "point": 0,
+                        "last_updated": today.strftime("%Y-%m-%d")
+                    }
+                    
         JSON.save(members_data, save_path)
 
         added = sum(1 for m_id in members_data if "point" not in members_data[m_id])
