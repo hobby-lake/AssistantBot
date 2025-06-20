@@ -4,14 +4,21 @@ Discordのサーバー管理アシスタントです。
 このBotは「TAKUYURI COMMUNITY」に最適化されています。
 使用登録がBot側で為されているサーバーのみ使用可能です。
 
+# TERMS OF SERVICE
+1. Discordの利用規約に同意しており、遵守していることを前提として運用します。
+2. 当Botは上記の通りBot側のリストにあるサーバーでのみ利用が可能です。
+3. 第三者による事前告知の無いコード改変を禁じます。
+
 # ENVIRONMENT
 - Windows11 24H2(テスト環境)
-- ConoHa VPS 1GBRAM/2CoreCPU
-- Ubuntu 22.04.5 LTS
+- ConoHa VPS 
+  - OS Ubuntu 22.04.5 LTS
+  - RAM 1GB
+  - CPU 2Core
 - Python 3.11.9
-- Py-cord 2.6.1
-- dotenv 1.1.0
-- requests 2.32.4
+  - Py-cord 2.6.1
+  - dotenv 1.1.0
+  - requests 2.32.4
 
 # HOW TO USE
 Discordのテキストチャンネル上で指定のコマンドを入力することで任意のコマンドが呼び出されます。
