@@ -4,11 +4,6 @@ Discordのサーバー管理アシスタントです。
 このBotは「TAKUYURI COMMUNITY」に最適化されています。
 使用登録がBot側で為されているサーバーのみ使用可能です。
 
-# TERMS OF SERVICE
-1. Discordの利用規約に同意しており、遵守していることを前提として運用します。
-2. 当Botは上記の通りBot側のリストにあるサーバーでのみ利用が可能です。
-3. 第三者による事前告知の無いコード改変を禁じます。
-
 # ENVIRONMENT
 - Windows11 24H2(テスト環境)
 - ConoHa VPS 
