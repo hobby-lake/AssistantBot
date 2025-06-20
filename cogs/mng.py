@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.commands import SlashCommandGroup, Option
 from discord import ApplicationContext
 from src import JSON, COLOR, SECURE, STREAM, PATH
@@ -12,6 +12,7 @@ import re
 today = date.today()
 load_dotenv()
 DEV = int(os.getenv("DEV"))
+GUILD_IDS = [int(gid.strip()) for gid in os.getenv("DEBUG_GUILD_ID", "").split(",") if gid.strip()]
 
 # /mng linkのUIとそのメインプロセス、クラスモジュール
 class RoleSelect(discord.ui.Select):
@@ -127,6 +128,7 @@ class ManageGroup(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.ticket_channels = {} 
+        self.update_calendar.start()
 
     mng = SlashCommandGroup("mng", "管理者用初期設定コマンド")
 
@@ -272,34 +274,98 @@ class ManageGroup(commands.Cog):
     async def init_calendar(
         self,
         ctx: discord.ApplicationContext,
-        name: Option(str, "登録id", autocomplete=name_autocomplete), # type: ignore
-        channel: Option(discord.TextChannel, "配信予定を表示するチャンネル") # type: ignore
+        name: Option(str, "登録id", autocomplete=name_autocomplete),  # type: ignore
+        channel: Option(discord.TextChannel, "配信予定を表示するチャンネル")  # type: ignore
     ):
         guild_id = ctx.guild.id
-        path = str(PATH.get_json(guild_id=guild_id,category="streamer"))
+        path = str(PATH.get_json(guild_id=guild_id, category="streamer"))
         config = JSON.load(path)
 
         if name not in config:
             await ctx.respond(f"❌ 登録id `{name}` は存在しません。", ephemeral=True)
             return
 
-        # カレンダー初期化処理
-        config[name]["AT"] = [channel.category_id, channel.id]
-
         # スケジュール取得
         channel_id = config[name].get("youtube_channel_id")
         if channel_id:
-            schedule = STREAM.get_schedule_from_youtube(channel_id)
+            schedule = STREAM.get_schedule_from_youtube(channel_id=channel_id)
         else:
+            COLOR.text(f"⚠ ダミースケジュールを出力します", COLOR.WARN)
             schedule = STREAM.get_mock_schedule()
 
-        embed = STREAM.build_schedule_embed(ctx=ctx, streamer_id=name, schedule_list=schedule)
+        # Embed 作成
+        embed = STREAM.build_schedule_embed(
+            guild_id=guild_id,
+            streamer_id=name,
+            schedule_list=schedule
+        )
 
-        msg = await channel.send(embed=embed)
-        config[name]["calendar_message_id"] = msg.id
+        # メッセージ送信
+        msg_id = config[name].get("calendar_message_id")
+        try:
+            if msg_id:
+                old_msg = await channel.fetch_message(msg_id)
+                await old_msg.edit(embed=embed)
+                msg = old_msg
+            else:
+                msg = await channel.send(embed=embed)
+                config[name]["calendar_message_id"] = msg.id
+        except discord.NotFound:
+            msg = await channel.send(embed=embed)
+            config[name]["calendar_message_id"] = msg.id
+
+        config[name]["AT"] = [ctx.author.id, channel.id]  # 必要に応じて変更
 
         JSON.save(config, path)
+
         await ctx.respond(f"✅ `{name}` のカレンダーを {channel.mention} に設置しました。", ephemeral=True)
+        COLOR.text(f"✅ `{name}` のカレンダーを {channel.mention} に設置しました。", COLOR.Log)
+        COLOR.text(f"カレンダーのメッセージID: {msg.id}\nカレンダーのチャンネルID: {channel.id}\nカレンダーの登録者ID: {ctx.author.id}", COLOR.Data)
+
+    @tasks.loop(hours=1)
+    async def update_calendar(self):
+        """定期的に配信者のカレンダーを更新するタスク"""
+        for guild_id in self.bot.guild_ids:
+            path = str(PATH.get_json(guild_id=guild_id, category="streamer"))
+            config = JSON.load(path)
+
+            for name, data in config.items():
+                if "AT" not in data or len(data["AT"]) < 2:
+                    continue
+
+                # スケジュール取得
+                if "youtube_channel_id" in data:
+                    schedule = STREAM.get_schedule_from_youtube(data["youtube_channel_id"])
+                else:
+                    schedule = STREAM.get_mock_schedule()
+
+                embed = STREAM.build_schedule_embed(
+                    guild_id=guild_id,
+                    streamer_id=name,
+                    schedule_list=schedule
+                )
+
+                channel_id = data["AT"][1]
+                channel = self.bot.get_channel(channel_id)
+                if not isinstance(channel, discord.TextChannel):
+                    continue
+
+                try:
+                    msg_id = data.get("calendar_message_id")
+                    if msg_id:
+                        message = await channel.fetch_message(msg_id)
+                        await message.edit(embed=embed)
+                    else:
+                        message = await channel.send(embed=embed)
+                        data["calendar_message_id"] = message.id  # 初回のみ保存
+                except discord.NotFound:
+                    # メッセージが存在しない場合、新規送信してID保存
+                    message = await channel.send(embed=embed)
+                    data["calendar_message_id"] = message.id
+                except Exception as e:
+                    print(f"⚠️ カレンダー更新失敗: {name} in {guild_id} => {e}")
+
+            JSON.save(config, path)
 
 def setup(bot):
     bot.add_cog(ManageGroup(bot))

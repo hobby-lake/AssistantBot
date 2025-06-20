@@ -42,7 +42,7 @@ class MainProcess(Bot):
 
     # エラーハンドラー
     async def on_application_command_error(self, ctx: discord.ApplicationContext, error):
-        COLOR.text(f"[ERROR] {ctx.command} にてエラー: {type(error).__name__}: {error}", COLOR.Error)
+        COLOR.text(f"[ERROR] {ctx.command} にてエラー: {type(error).__name__}: {error}\n{type(error)}", COLOR.Error)
 
         if isinstance(error, discord.errors.Forbidden):
             await ctx.respond("❌ Botに権限がありません。", ephemeral=True)

@@ -21,9 +21,8 @@ def get_mock_schedule():
         })
     return result
 
-# YouTube
-def get_schedule_from_youtube(channel_id: str, max_results=5):
-    # 検索して配信予定のvideoIdを取得
+# YouTube API
+def get_schedule_from_youtube(channel_id: str, max_results=25):
     search_url = "https://www.googleapis.com/youtube/v3/search"
     search_params = {
         "key": YOUTUBE_API_KEY,
@@ -42,7 +41,6 @@ def get_schedule_from_youtube(channel_id: str, max_results=5):
     if not video_ids:
         return []
 
-    # videoId から詳細情報（特に scheduledStartTime）を取得
     videos_url = "https://www.googleapis.com/youtube/v3/videos"
     videos_params = {
         "key": YOUTUBE_API_KEY,
@@ -57,7 +55,6 @@ def get_schedule_from_youtube(channel_id: str, max_results=5):
     for item in videos_data.get("items", []):
         snippet = item["snippet"]
         details = item.get("liveStreamingDetails", {})
-
         scheduled = details.get("scheduledStartTime")
         if scheduled:
             dt = datetime.fromisoformat(scheduled.replace("Z", "+00:00")).astimezone()
@@ -68,7 +65,7 @@ def get_schedule_from_youtube(channel_id: str, max_results=5):
 
     return result
 
-# Twitch
+# Twitch API
 def get_twitch_app_access_token():
     url = "https://id.twitch.tv/oauth2/token"
     params = {
@@ -79,29 +76,9 @@ def get_twitch_app_access_token():
 
     response = requests.post(url, params=params)
     response.raise_for_status()
-    data = response.json()
-    return data["access_token"]
+    return response.json()["access_token"]
 
-def get_twitch_user_id(username, access_token, client_id):
-    url = "https://api.twitch.tv/helix/users"
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Client-Id": client_id
-    }
-    params = {
-        "login": username
-    }
-
-    response = requests.get(url, headers=headers, params=params)
-    response.raise_for_status()
-    data = response.json()
-
-    if data["data"]:
-        return data["data"][0]["id"]
-    else:
-        raise ValueError(f"ユーザー '{username}' が見つかりませんでした")
-    
-def get_twitch_broadcaster_id(username: str, access_token: str, client_id: str):
+def get_twitch_broadcaster_id(username: str, access_token: str):
     url = "https://api.twitch.tv/helix/users"
     headers = {
         "Authorization": f"Bearer {access_token}",
@@ -119,7 +96,7 @@ def get_twitch_broadcaster_id(username: str, access_token: str, client_id: str):
         raise ValueError(f"Twitchユーザーが見つかりません: {username}")
     return users[0]["id"]
 
-def get_schedule_from_twitch(broadcaster_id: str, access_token: str, client_id: str, max_results=5):
+def get_schedule_from_twitch(broadcaster_id: str, access_token: str, max_results=5):
     url = "https://api.twitch.tv/helix/schedule"
     headers = {
         "Authorization": f"Bearer {access_token}",
@@ -131,6 +108,11 @@ def get_schedule_from_twitch(broadcaster_id: str, access_token: str, client_id: 
     }
 
     response = requests.get(url, headers=headers, params=params)
+
+    if response.status_code == 404:
+        # スケジュール未登録などによる 404 は無視
+        return []
+
     response.raise_for_status()
     data = response.json()
 
@@ -146,28 +128,33 @@ def get_schedule_from_twitch(broadcaster_id: str, access_token: str, client_id: 
 
     return results
 
-# 統合
-def get_combined_schedule(streamer_config, twitch_token, twitch_client_id):
+# YouTube + Twitch 統合スケジュール取得
+def get_combined_schedule(streamer_config, twitch_token):
     result = []
 
     if "youtube" in streamer_config:
         result += get_schedule_from_youtube(streamer_config["youtube"])
 
     if "twitch" in streamer_config:
-        broadcaster_id = get_twitch_broadcaster_id(
-            username=streamer_config["twitch"],
-            access_token=twitch_token,
-            client_id=twitch_client_id
-        )
-        result += get_schedule_from_twitch(
-            broadcaster_id=broadcaster_id,
-            access_token=twitch_token,
-            client_id=twitch_client_id
-        )
+        try:
+            broadcaster_id = get_twitch_broadcaster_id(
+                username=streamer_config["twitch"],
+                access_token=twitch_token,
+            )
+            result += get_schedule_from_twitch(
+                broadcaster_id=broadcaster_id,
+                access_token=twitch_token,
+            )
+        except requests.HTTPError as e:
+            if e.response.status_code == 404:
+                # スケジュールなし→無視
+                pass
+            else:
+                raise
 
     return sorted(result, key=lambda x: x["date"])
 
-def build_schedule_embed(ctx: ApplicationContext, streamer_id, schedule_list):
+def build_schedule_embed(guild_id: int, streamer_id, schedule_list):
     weekdays = ["月", "火", "水", "木", "金", "土", "日"]
 
     now = datetime.now()
@@ -187,7 +174,7 @@ def build_schedule_embed(ctx: ApplicationContext, streamer_id, schedule_list):
             future.append(formatted)
 
     # 配信者の表示名取得
-    path = PATH.get_json(ctx.guild.id, "streamer")
+    path = PATH.get_json(guild_id, "streamer")
     streamer_data = JSON.load(path)
     streamer_name = streamer_data[streamer_id]["display_name"]
 

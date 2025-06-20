@@ -30,9 +30,9 @@ class CheckCommand(commands.Cog):
 
         # リリースノート
         embed.add_field(
-            name="📄 リリースノート Ver2.1.2",
+            name="📄 リリースノート Ver2.1.3",
             value=("""
-                軽微なコード修正
+                配信カレンダーの1時間間隔更新の実装
                 """),
             inline=False
         )
