@@ -103,6 +103,7 @@ class BosyuUI(discord.ui.View):
         self.詳細 = None
         self.remaining = None
         self.owner_id = interaction.user.id
+        self.owner_mention = interaction.user.mention
 
         self.role_select_view = GameSelectView(interaction, roles, self)
         for item in self.role_select_view.children:
@@ -128,7 +129,7 @@ class BosyuUI(discord.ui.View):
 
         embed = discord.Embed(
             title="🎮 募集中",
-            description=f"{interaction.user.mention}が<@&{self.selected_role_id}> の募集を開始しました！",
+            description=f"{interaction.user.mention}さんが <@&{self.selected_role_id}> の募集を開始しました！",
             color=discord.Color.blue()
         )
         embed.add_field(name="👥 募集人数", value=f"0/{self.人数}人", inline=False)
@@ -151,7 +152,7 @@ class ParticipationView(discord.ui.View):
     async def update_embed(self):
         embed = discord.Embed(
             title="🎮 募集中",
-            description=f"<@&{self.bosyu_view.selected_role_id}> の募集が行われています！",
+            description=f"{self.bosyu_view.owner_mention}さんが <@&{self.bosyu_view.selected_role_id}> の募集をしています！",
             color=discord.Color.blue()
         )
         embed.add_field(
@@ -228,7 +229,7 @@ class ParticipationView(discord.ui.View):
 
         embed = discord.Embed(
             title="🛑 募集終了",
-            description=f"<@&{self.bosyu_view.selected_role_id}> の募集が終了されました。",
+            description=f"{self.bosyu_view.owner_mention}さんが <@&{self.bosyu_view.selected_role_id}> の募集を終了しました。",
             color=discord.Color.red()
         )
         embed.add_field(name="👥 参加者", value="\n".join(self.joined_users.values()) or "なし", inline=False)

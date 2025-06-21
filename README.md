@@ -30,7 +30,7 @@ Discordのテキストチャンネル上で指定のコマンドを入力する�
   - addstreamer
     - YouTubeチャンネルID(任意)・TwitchログインID(任意)を登録ID・表示名と紐づける
   - initcalendar
-    - 登録した配信者の配信予定カレンダーを出力する
+    - 登録した配信者の配信予定カレンダーを出力する(1時間ごとに埋め込みリンクを更新)
 - /point
   - check target(任意のメンバー。なくてもよい。)
     - targetのポイント残高を表示する。
@@ -39,7 +39,7 @@ Discordのテキストチャンネル上で指定のコマンドを入力する�
   - minus target(任意のメンバー。入力必須) amount(ポイントの数)
     - taegetのポイントをamount分減らす。ただし、amountがtargetのポイントを上回る場合はこれをしない。
 - /event
-  - 
+  - 未実装
 
 # OTHER INFORMATIONS
 [OAuth2 リンク](https://discord.com/oauth2/authorize?client_id=1380828889156423761&permissions=8&integration_type=0&scope=bot+applications.commands)

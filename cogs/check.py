@@ -30,9 +30,9 @@ class CheckCommand(commands.Cog):
 
         # リリースノート
         embed.add_field(
-            name="📄 リリースノート Ver2.1.3",
+            name="📄 リリースノート Ver2.1.3a",
             value=("""
-                配信カレンダーの1時間間隔更新の実装
+- **修正**: `/bosyu` 埋め込みの更新の際に募集者が表示されない不具合を修正しました。
                 """),
             inline=False
         )
