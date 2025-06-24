@@ -1,6 +1,8 @@
-# コマンド実行権限の確認
+"""SECURITY.py
+>コマンドの実行制限
+"""
 from discord import ApplicationContext
-from src import COLOR
+from src.core import CONSOLE
 import os
 from dotenv import load_dotenv
 
@@ -13,6 +15,6 @@ async def Restrict(ctx: ApplicationContext):
         return False
     if not ctx.author.guild_permissions.manage_guild and ctx.author.id != DEV:
         await ctx.respond("❌ このコマンドを使うにはサーバー管理権限が必要です。", ephemeral=True)
-        COLOR.text(f"{ctx.author.name}'s Access was denied!", COLOR.WARN)
+        CONSOLE.text(f"{ctx.author.name}'s Access was denied!", CONSOLE.WARN)
         return False
     return True

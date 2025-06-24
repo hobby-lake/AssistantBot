@@ -43,3 +43,13 @@ Discordのテキストチャンネル上で指定のコマンドを入力する�
 
 # OTHER INFORMATIONS
 [OAuth2 リンク](https://discord.com/oauth2/authorize?client_id=1380828889156423761&permissions=8&integration_type=0&scope=bot+applications.commands)
+
+# CODING RULE
+- src
+  - commands
+    - コマンドの機能部分をここに格納する
+  - core
+    - API.py:APIの利用を担当
+    - BASE.py:データファイルの基本処理と環境変数の定義を担当
+    - CONSOLE.py:コンソール出力を担当
+    - SECURITY.py:コマンドの実行権限確認を担当

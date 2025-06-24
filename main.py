@@ -2,13 +2,7 @@ import os
 import discord
 from discord.ext import commands
 from discord import Bot
-from dotenv import load_dotenv
-from src import COLOR
-
-load_dotenv()
-DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
-GUILD_IDS = [int(gid.strip()) for gid in os.getenv("DEBUG_GUILD_ID", "").split(",") if gid.strip()]
-AUTHORIZED_USER_ID = int(os.getenv("DEV"))
+from src.core import CONSOLE, BASE
 
 class MainProcess(Bot):
     def __init__(self):
@@ -19,15 +13,15 @@ class MainProcess(Bot):
         intents.message_content = True
         intents.members = True
         super().__init__(intents=intents)
-        self.guild_ids = GUILD_IDS
+        self.guild_ids = BASE.GUILD_IDS
 
         self.add_listener(self.on_application_command_error)
 
     # 認証サーバーの確認
     async def on_ready(self):
-        COLOR.text(f"> Activating: {self.user}", COLOR.Log)
-        COLOR.text("> Authorized servers:", COLOR.Data)
-        for guild_id in GUILD_IDS:
+        CONSOLE.text(f"> Activating: {self.user}", CONSOLE.Log)
+        CONSOLE.text("> Authorized servers:", CONSOLE.Data)
+        for guild_id in self.guild_ids:
             try:
                 guild = await self.fetch_guild(guild_id)
                 if guild:
@@ -38,11 +32,11 @@ class MainProcess(Bot):
                 print(f"・ID: {guild_id} → ❌ 存在しません（NotFound）")
             except discord.HTTPException as e:
                 print(f"・ID: {guild_id} → ❌ HTTPエラー: {e}")
-        COLOR.text("> Activated!", COLOR.Log)
+        CONSOLE.text("> Activated!", CONSOLE.Log)
 
     # エラーハンドラー
     async def on_application_command_error(self, ctx: discord.ApplicationContext, error):
-        COLOR.text(f"[ERROR] {ctx.command} にてエラー: {type(error).__name__}: {error}\n{type(error)}", COLOR.Error)
+        CONSOLE.text(f"[ERROR] {ctx.command} にてエラー: {type(error).__name__}: {error}\n{type(error)}", CONSOLE.Error)
 
         if isinstance(error, discord.errors.Forbidden):
             await ctx.respond("❌ Botに権限がありません。", ephemeral=True)
@@ -56,11 +50,11 @@ class MainProcess(Bot):
 # Botの立ち上げとCogの登録
 async def main():
     bot = MainProcess()
-    COLOR.text("Bot is starting...", COLOR.Log)
+    CONSOLE.text("Bot is starting...", CONSOLE.Log)
     for file in os.listdir("cogs"):
         if file.endswith(".py") and not file.startswith("__"):
             bot.load_extension(f"cogs.{file[:-3]}")
-    await bot.start(DISCORD_TOKEN)
+    await bot.start(BASE.DISCORD_TOKEN)
 
 # メインプロセスの実行
 if __name__ == "__main__":
@@ -68,4 +62,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except Exception as e:
-        COLOR.text(f"Error: {e}", COLOR.Error)
+        CONSOLE.text(f"Error: {e}", CONSOLE.Error)
