@@ -51,6 +51,7 @@ class YouTubeAPI():
                     "title": snippet["title"]
                 })
 
+        result.sort(key=lambda x: x["date"])
         return result
 
 class TwitchAPI():
