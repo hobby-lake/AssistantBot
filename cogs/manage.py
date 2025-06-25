@@ -35,7 +35,7 @@ class ManagerCommands(commands.Cog):
         youtube_channel_id: Option(str, "YouTubeのチャンネルID（任意）", required=False),  # type: ignore
         twitch_username: Option(str, "TwitchのユーザーID（ログイン名・任意）", required=False)  # type: ignore
     ):
-        await ADD_STREAMER.run(self, ctx, name, display_name, youtube_channel_id, twitch_username)
+        await ADD_STREAMER.run(ctx, name, display_name, youtube_channel_id, twitch_username)
 
 def setup(bot):
     bot.add_cog(ManagerCommands(bot))
