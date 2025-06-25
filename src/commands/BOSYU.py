@@ -134,7 +134,12 @@ class BosyuUI(discord.ui.View):
         embed.add_field(name="👀 観戦者", value="なし", inline=False)
         embed.add_field(name="📝 詳細", value=self.詳細 or "なし", inline=False)
 
-        await interaction.response.send_message(embed=embed, view=view, allowed_mentions=discord.AllowedMentions(roles=True))
+        await interaction.response.send_message(
+            content=f"<@&{self.selected_role_id}> の皆様へ",
+            embed=embed,
+            view=view,
+            allowed_mentions=discord.AllowedMentions(roles=True)
+        )
         view.message = await interaction.original_response()
         self.stop()
 

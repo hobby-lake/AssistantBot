@@ -1,12 +1,12 @@
 """API.py
 >API利用メゾッド
 """
-from datetime import datetime, timedelta
+from datetime import datetime
 import time
 import requests
 from src.core import BASE
 
-class YoutubeAPI():
+class YouTubeAPI():
     @staticmethod
     def get_schedule(channel_id: str, max_results: int = 10):
         max_results = min(max_results, 20)
