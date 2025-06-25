@@ -30,7 +30,7 @@ class CalendarManager(commands.Cog):
         name: Option(str, "登録id", autocomplete=name_autocomplete),  # type: ignore
         channel: Option(discord.TextChannel, "配信予定を表示するチャンネル")  # type: ignore
     ):
-        SCHEDULE.initialize(ctx, name, channel)
+        await SCHEDULE.initialize(ctx, name, channel)
 
     @tasks.loop(hours=1)
     async def update_calendar(self):
