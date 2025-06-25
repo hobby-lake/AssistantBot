@@ -2,12 +2,12 @@ from discord.ext import commands
 from discord.commands import slash_command
 from discord import ApplicationContext, Embed
 
-class CheckCommand(commands.Cog):
+class releasenote(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @slash_command(
-    name="check",
+    name="releasenote",
     description="Botが動作しているか確認します。リリースノートも送信します。",
     guild_ids=None
     )
@@ -30,9 +30,11 @@ class CheckCommand(commands.Cog):
 
         # リリースノート
         embed.add_field(
-            name="📄 リリースノート Ver2.1.3a",
+            name="📄 リリースノート Ver2.2.0",
             value=("""
-- **修正**: `/bosyu` 埋め込みの更新の際に募集者が表示されない不具合を修正しました。
+- **修正**: コード設計の見直しとリファクタリングを行い、可読性と保守性を向上させました。
+- **修正**: APIの扱い方を変更しました。
+- **修正**: 募集コマンドでメンションを追加で送信するようにしました。
                 """),
             inline=False
         )
@@ -42,5 +44,5 @@ class CheckCommand(commands.Cog):
         await ctx.respond(embed=embed)
 
 def setup(bot):
-    bot.add_cog(CheckCommand(bot))
-    print(f"✅ {CheckCommand.__name__} loaded")
+    bot.add_cog(releasenote(bot))
+    print(f"✅ {releasenote.__name__} loaded")

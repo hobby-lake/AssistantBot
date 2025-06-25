@@ -1,12 +1,7 @@
 from discord.ext import commands
 from discord.commands import SlashCommandGroup, Option
 from discord import ApplicationContext, Member
-from src import JSON, COLOR, SECURE, PATH
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-DEV = int(os.getenv("DEV"))
+from src.commands import POINT
 
 class PointManager(commands.Cog):
     def __init__(self, bot):
@@ -15,50 +10,16 @@ class PointManager(commands.Cog):
     point = SlashCommandGroup("point", "ポイント管理コマンド")
 
     @point.command(name="check", description="ポイント残高を確認します。")
-    async def plus(self, ctx: ApplicationContext, target: Option(Member, "対象ユーザー", required = False, default=None)): # type:ignore
-        await ctx.defer()
-        guild=ctx.guild
-        data_path = str(PATH.get_json(guild_id=guild.id,category="member"))
-        data = JSON.load(data_path)
+    async def check(self, ctx: ApplicationContext, target: Option(Member, "対象ユーザー", required = False, default=None)): # type:ignore
+        POINT.check(self, ctx, target)
 
-        if target == None:
-            result = data[str(str(ctx.author.id))]["point"]
-            await ctx.respond(f"ポイント残高は{result}です。\n（実行者: {ctx.author.mention}）")
-        else:
-            result = data[str(target.id)]["point"]
-            await ctx.respond(f"{target.display_name}のポイント残高は{result}です。\n（実行者: {ctx.author.mention}）")
-        
     @point.command(name="plus", description="ポイントを付与します。")
     async def plus(self, ctx: ApplicationContext, target: Member, amount: int):
-        await ctx.defer()
-        if await SECURE.Restrict(ctx) == False:
-            return
-        guild=ctx.guild
-        data_path = str(PATH.get_json(guild_id=guild.id,category="member"))
-        data = JSON.load(data_path)
-
-        data[str(target.id)]["point"] = data[str(target.id)]["point"] + amount
-        JSON.save(data, data_path)
-        await ctx.respond(f"{target.display_name}に{amount}ポイントを付与しました。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）")
-        COLOR.text(f"{target.display_name}に{amount}ポイントを付与しました。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）",COLOR.Log)
+        POINT.plus(self, ctx, target, amount)
 
     @point.command(name="minus", description="ポイントを減らします。")
-    async def plus(self, ctx: ApplicationContext, target: Member, amount: int):
-        await ctx.defer()
-        if await SECURE.Restrict(ctx) == False:
-            return
-        guild=ctx.guild
-        data_path = str(PATH.get_json(guild_id=guild.id,category="member"))
-        data = JSON.load(data_path)
-        
-        if not data[str(target.id)]["point"] < amount:
-            data[str(target.id)]["point"] = data[str(target.id)]["point"] - amount
-            JSON.save(data, data_path)
-            await ctx.respond(f"{target.display_name}のポイントを{amount}ポイント減らしました。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）")
-            COLOR.text(f"{target.display_name}のポイントを{amount}ポイント減らしました。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）", COLOR.Log)
-        else:
-            await ctx.respond(f"{target.display_name}のポイントが足りません。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）")
-            COLOR.text(f"{target.display_name}のポイントが足りません。\nポイント残高は{data[str(target.id)]['point']}です。\n（実行者: {ctx.author.mention}）", COLOR.WARN)
+    async def minus(self, ctx: ApplicationContext, target: Member, amount: int):
+        POINT.minus(self, ctx, target, amount)
 
 def setup(bot):
     bot.add_cog(PointManager(bot))
