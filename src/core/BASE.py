@@ -25,7 +25,8 @@ prefix = {
     "member":"MEM",
     "role":"ROL",
     "streamer":"STR",
-    "event":"EVE"
+    "event":"EVE",
+    "report":"REP"
 }
 
 # JSONファイルのパスを取得
