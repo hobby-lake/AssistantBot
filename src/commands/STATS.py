@@ -53,19 +53,19 @@ async def set_embed(data):
         timestamp=datetime.utcnow()
     )
     progress.add_field(name="__バグの修正__",
-                        value="┣ *対応予定*\n" \
+                        value="┣ **対応予定**\n" \
                         f"{data[0]}\n" \
-                        "┣ *対応中*\n" \
+                        "┣ **対応中**\n" \
                         f"{data[1]}\n" \
-                        "┣ *経過観察中*\n" \
+                        "┣ **経過観察中**\n" \
                         f"{data[2]}\n",
                         inline=True)
     progress.add_field(name="__新機能の実装__",
-                        value="┣ *実装予定*\n" \
+                        value="┣ **実装予定**\n" \
                         f"{data[3]}\n" \
-                        "┣ *実装中*\n" \
+                        "┣ **実装中**\n" \
                         f"{data[4]}\n" \
-                        "┣ *調整中*\n" \
+                        "┣ **調整中**\n" \
                         f"{data[5]}\n",
                         inline=True)
     progress.set_footer(text="処置が完了した個所は一覧から削除されます。\n2時間に1度更新されます。")
