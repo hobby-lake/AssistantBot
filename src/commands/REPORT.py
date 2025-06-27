@@ -5,14 +5,15 @@ class BugReportModal(discord.ui.Modal):
     subject = discord.ui.InputText(
         label="件名",
         style=discord.InputTextStyle.short,
-        placeholder="バグの簡単な説明を入力してください。",
-        required=True,
+        placeholder="不具合が起きたコマンドを教えてください。(10文字まで)",
+        max_length=10,
+        required=True
     )
     description = discord.ui.InputText(
         label="詳細",
         style=discord.InputTextStyle.long,
         placeholder="起こった不具合について詳しく教えてください。",
-        required=True,
+        required=True
     )
 
     def __init__(self):
@@ -23,10 +24,23 @@ class BugReportModal(discord.ui.Modal):
         self.description.placeholder = "例: /bosyu コマンドを実行した際に、インタラクションに失敗しました。と返されます。"
 
     async def callback(self, interaction: discord.Interaction):
+        old_data = BASE.dataload(BASE.get_json_path(guild_id=interaction.guild_id, category="report"))
+        
+        if old_data:
+            max_key = max(int(k) for k in old_data.keys())
+            new_key = str(max_key + 1)
+        else:
+            new_key = "1"
+
         data = {
-            "subject": self.subject.value,
-            "description": self.description.value,
+            new_key: {
+                "type": "bug",
+                "subject": self.subject.value,
+                "description": self.description.value,
+                "stats": "Scheduled",
+            }
         }
+        
         path = BASE.get_json_path(guild_id=interaction.guild_id, category="report")
         BASE.datasave(data, path)
         await interaction.response.send_message("ご協力ありがとうございます！", ephemeral=True)
