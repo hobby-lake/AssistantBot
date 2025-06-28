@@ -30,9 +30,9 @@ class releasenote(commands.Cog):
 
         # リリースノート
         embed.add_field(
-            name="📄 リリースノート Ver2.2.2",
+            name="📄 リリースノート Ver2.2.3",
             value=("""
-- **新機能**: `/stats` 開発ステータスを管理するコマンドグループ
+- **修正**: `エラーメッセージ` コードエラー時に開発者へメンションされる仕様に変更。 
                 """),
             inline=False
         )

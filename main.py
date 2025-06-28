@@ -45,7 +45,7 @@ class MainProcess(Bot):
         elif isinstance(error, commands.CommandInvokeError):
             await ctx.respond(f"⚠️ 実行中にエラーが発生しました: `{error.original}`", ephemeral=True)
         else:
-            await ctx.respond("❌ エラーが発生しました。Lakeに問い合わせてください。", ephemeral=True)
+            await ctx.respond("❌ @lake0808 らけちゃあああん!エラー出てるよぉ!", ephemeral=False)
 
 # Botの立ち上げとCogの登録
 async def main():

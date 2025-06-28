@@ -6,7 +6,7 @@ def get_data(guild_id: int = 0):
     path = BASE.get_json_path(guild_id=guild_id, category="report")
     data = BASE.dataload(path)
     if data == {}:
-        return ["┣ ありません。"] * 6
+        return ["┣ ありません。\n┗━━━━━━━━━━━━━━━━━━━━"] * 6
     amount_data = max(int(k) for k in data.keys())
     
     debug_scheduled         = ""
