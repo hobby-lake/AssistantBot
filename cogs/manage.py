@@ -1,8 +1,6 @@
-import discord
 from discord.ext import commands
 from discord.commands import SlashCommandGroup, Option
 from discord import ApplicationContext
-from src.core import BASE
 from src.commands import GET_MEMBERS, TICKET, LINK_VC_ROLE, ADD_STREAMER
 from datetime import date
 

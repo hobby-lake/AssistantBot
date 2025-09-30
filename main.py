@@ -56,6 +56,8 @@ async def main():
             bot.load_extension(f"cogs.{file[:-3]}")
     await bot.start(BASE.DISCORD_TOKEN)
 
+
+
 # メインプロセスの実行
 if __name__ == "__main__":
     import asyncio
