@@ -30,9 +30,9 @@ class releasenote(commands.Cog):
 
         # リリースノート
         embed.add_field(
-            name="📄 リリースノート Ver2.2.3",
+            name="📄 リリースノート Ver2.2.4",
             value=("""
-- **修正**: `エラーメッセージ` コードエラー時に開発者へメンションされる仕様に変更。 
+- **追加**: `dice` 指定の回数だけ指定した目の数を持つサイコロを振る。 
                 """),
             inline=False
         )
