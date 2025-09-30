@@ -8,8 +8,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 DEV = int(os.getenv("DEV"))
+POINT_ADMIN = int(os.getenv("POINT_ADMIN"))
 
 async def Restrict(ctx: ApplicationContext):
+    if POINT_ADMIN != None and ctx.author == POINT_ADMIN:
+        return True
+
     if ctx.guild is None:
         await ctx.respond("❌ このコマンドはサーバー内でのみ使用できます。", ephemeral=True)
         return False
