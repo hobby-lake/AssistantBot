@@ -1,4 +1,5 @@
 import os
+import asyncio
 import discord
 from discord.ext import commands
 from discord import Bot
@@ -60,7 +61,6 @@ async def main():
 
 # メインプロセスの実行
 if __name__ == "__main__":
-    import asyncio
     try:
         asyncio.run(main())
     except Exception as e:

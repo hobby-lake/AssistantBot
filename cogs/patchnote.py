@@ -30,9 +30,10 @@ class releasenote(commands.Cog):
 
         # リリースノート
         embed.add_field(
-            name="📄 リリースノート Ver2.2.4",
+            name="📄 リリースノート Ver2.2.5",
             value=("""
-- **追加**: `dice` 指定の回数だけ指定した目の数を持つサイコロを振る。 
+- **削除**: `STATS` 開発ステータスの可視化機能を削除
+- **追加**: `Kujibiki` くじびきの作成
                 """),
             inline=False
         )

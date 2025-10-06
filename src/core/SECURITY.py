@@ -8,7 +8,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 DEV = int(os.getenv("DEV"))
-POINT_ADMIN = int(os.getenv("POINT_ADMIN"))
+
+if os.getenv("POINT_ADMIN") != None:
+    POINT_ADMIN = int(os.getenv("POINT_ADMIN"))
+else:
+    POINT_ADMIN = "NO ONE REGISTERED"
 
 async def Restrict(ctx: ApplicationContext):
     if ctx.guild is None:
