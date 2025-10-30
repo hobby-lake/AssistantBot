@@ -30,10 +30,9 @@ class releasenote(commands.Cog):
 
         # リリースノート
         embed.add_field(
-            name="📄 リリースノート Ver2.2.5",
+            name="📄 リリースノート Ver2.2.6",
             value=("""
-- **削除**: `STATS` 開発ステータスの可視化機能を削除
-- **追加**: `Kujibiki` くじびきの作成
+- **追加**: `Kujibiki` 補充機能の追加
                 """),
             inline=False
         )

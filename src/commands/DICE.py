@@ -22,7 +22,7 @@ class Kujibiki():
 
             # 入力欄: くじの中身
             self.kuji_items = discord.ui.InputText(
-                label="くじの中身（カンマ区切りで入力）",
+                label="くじの中身（半角カンマ区切りで入力）",
                 placeholder="例: 大吉,中吉,小吉,凶"
             )
             self.add_item(self.kuji_items)
@@ -60,9 +60,10 @@ class Kujibiki():
         def __init__(self, items: list[str]):
             super().__init__(timeout=None)
             self.items = items
+            self.taken_items = []
 
         @discord.ui.button(label="くじを引く", style=discord.ButtonStyle.green)
-        async def draw_button(self, button: discord.ui.Button, interaction: discord.Interaction):
+        async def pick_up(self, button: discord.ui.Button, interaction: discord.Interaction):
             if not self.items:
                 await interaction.response.send_message(
                     f"**もうくじがないよ！**", ephemeral=False
@@ -70,6 +71,15 @@ class Kujibiki():
             else:
                 result = rd.choice(self.items)
                 self.items.remove(result)
+                self.taken_items.append(result)
                 await interaction.response.send_message(
                     f"🎯 {interaction.user.mention} の結果: **{result}**", ephemeral=False
                 )
+
+        @discord.ui.button(label="リセット", style=discord.ButtonStyle.grey)
+        async def refill(self, button: discord.ui.Button, interaction: discord.Interaction):
+            for item in self.taken_items:
+                self.items.append(item)
+            await interaction.response.send_message(
+                f"**補充したよ！**", ephemeral=False
+            )
