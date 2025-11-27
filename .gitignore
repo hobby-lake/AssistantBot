@@ -6,7 +6,6 @@ dist/
 build/
 venv/
 data/**/*.json
-!data/api_data/*
 data/event_data/*
 SampleSourceCode/
 .env
