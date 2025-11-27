@@ -1,8 +1,10 @@
 # SUMMARY
 Discordのサーバー管理アシスタントです。  
-基本オーダーメイドで構築していこうと思っています。  
+基本オーダーメイドで構築します。  
 このBotは「TAKUYURI COMMUNITY」に最適化されています。
 使用登録がBot側で為されているサーバーのみ使用可能です。
+
+このBotの設計思想はできるだけコマンドの引数を最小限に抑え、GUIから各機能にアクセスできるようにすることです。
 
 # ENVIRONMENT
 - Windows11 24H2(テスト環境)
@@ -17,39 +19,8 @@ Discordのサーバー管理アシスタントです。
 
 # HOW TO USE
 Discordのテキストチャンネル上で指定のコマンドを入力することで任意のコマンドが呼び出されます。
-
-- /check
-  - ロードされた関数とコマンドの一覧、OAuth2リンクが確認できます。
-- /mng
-  - get_members
-    - サーバーメンバーのIDを鍵にポイント情報をメンバーと紐づけ、その情報をjsonとして保存します。
-  - link
-    - ロールとボイスチャンネルを紐づけし、その情報をjsonとして保存します。
-  - set_ticket_channel
-    - 問い合わせフォームカテゴリとアーカイブカテゴリを作成し、前者にチケット発行のためのチケットセンターという名前のテキストチャンネルを作成する。
-  - addstreamer
-    - YouTubeチャンネルID(任意)・TwitchログインID(任意)を登録ID・表示名と紐づける
-  - initcalendar
-    - 登録した配信者の配信予定カレンダーを出力する(1時間ごとに埋め込みリンクを更新)
-- /point
-  - check target(任意のメンバー。なくてもよい。)
-    - targetのポイント残高を表示する。
-  - plus target(任意のメンバー。入力必須) amount(ポイントの数)
-    - targetにたいしてamount分のポイントを付与する。
-  - minus target(任意のメンバー。入力必須) amount(ポイントの数)
-    - taegetのポイントをamount分減らす。ただし、amountがtargetのポイントを上回る場合はこれをしない。
-- /event
-  - 未実装
+基本的にコマンドヘルプを読めばわかります。
 
 # OTHER INFORMATIONS
+※こちらのリンクを介して追加しても運用サーバー外ではコマンドはすべて無効化されます。
 [OAuth2 リンク](https://discord.com/oauth2/authorize?client_id=1380828889156423761&permissions=8&integration_type=0&scope=bot+applications.commands)
-
-# CODING RULE
-- src
-  - commands
-    - コマンドの機能部分をここに格納する
-  - core
-    - API.py:APIの利用を担当
-    - BASE.py:データファイルの基本処理と環境変数の定義を担当
-    - CONSOLE.py:コンソール出力を担当
-    - SECURITY.py:コマンドの実行権限確認を担当
